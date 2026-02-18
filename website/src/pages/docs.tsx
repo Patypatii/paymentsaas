@@ -97,6 +97,11 @@ export default function Docs() {
                       <td className="px-6 py-4 text-sm text-muted">Your active Secret Key (Bearer).</td>
                       <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-primary">pk_live_...</td>
                     </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-main">Webhook Secret</td>
+                      <td className="px-6 py-4 text-sm text-muted">The ID of your API key. Used to sign per-request callbacks.</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-primary">6995fe04...</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -248,9 +253,9 @@ const response = await axios.post(
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <code className="text-sm font-bold text-primary">callbackUrl</code>
-                            <span className="text-[10px] bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded uppercase">Optional</span>
+                            <span className="text-[10px] bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded uppercase">Highly Recommended</span>
                           </div>
-                          <p className="text-sm text-muted">A unique URL to receive notifications for this specific transaction.</p>
+                          <p className="text-sm text-muted">A public URL to receive instant payment notifications. Securely signed with your <span className="text-main font-medium">Webhook Secret (Key ID)</span>.</p>
                         </div>
                       </li>
                     </ul>
@@ -359,9 +364,10 @@ const response = await axios.post(
                 <h3 className="text-sm font-bold text-main uppercase tracking-widest mb-4">Steps to Integrate</h3>
                 <ol className="list-decimal list-inside space-y-3 text-muted text-sm">
                   <li>Create an HTTP POST endpoint on your server (e.g., <code className="text-primary">/api/paylor-webhook</code>).</li>
-                  <li>Go to your <Link href="/webhooks" className="text-primary hover:underline">Dashboard &gt; Webhooks</Link> and add your URL.</li>
-                  <li>Subscribe to events like <code className="text-primary">payment.success</code> and <code className="text-primary">payment.failed</code>.</li>
-                  <li>Secure your endpoint by verifying the <code className="text-primary">X-Webhook-Signature</code> header.</li>
+                  <li>Go to your <Link href="/webhooks" className="text-primary hover:underline">Dashboard &gt; Developers &gt; API Keys</Link>.</li>
+                  <li>Copy the <span className="text-main font-bold">Key ID</span> (this is your Webhook Secret).</li>
+                  <li>Provide a <code className="text-primary">callbackUrl</code> in your STK Push request body.</li>
+                  <li>Secure your endpoint by verifying the <code className="text-primary">X-Webhook-Signature</code> header using your Secret.</li>
                 </ol>
               </div>
             </section>

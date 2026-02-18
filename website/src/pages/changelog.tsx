@@ -2,6 +2,7 @@ import Layout from '../components/layout/Layout';
 
 export default function Changelog() {
     const changes = [
+        { date: 'February 19, 2026', version: 'v1.3.0', title: 'Secure Dynamic Callbacks', desc: 'Implemented secure per-request signed callbacks and dashboard visibility for Webhook Secrets.' },
         { date: 'March 20, 2024', version: 'v1.2.0', title: 'Start of Public Beta', desc: 'Released the Merchant Dashboard and initial API endpoints.' },
         { date: 'February 15, 2024', version: 'v1.1.0', title: 'Added M-Pesa Integration', desc: 'Support for STK Push and C2B payments.' },
         { date: 'January 10, 2024', version: 'v1.0.0', title: 'Platform Inception', desc: 'Initial release of Paylor.' },

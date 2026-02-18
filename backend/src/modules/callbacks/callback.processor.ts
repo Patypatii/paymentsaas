@@ -158,6 +158,14 @@ export class CallbackProcessor {
 
       // Custom Callback URL (Per-transaction)
       if (transaction.callbackUrl) {
+        // Fetch an active API key to use as the signature secret
+        const { ApiKeyModel } = await import('../api-keys/apiKey.model');
+        const merchantKey = await ApiKeyModel.findOne({
+          merchantId: transaction.merchantId,
+          isActive: true,
+          revokedAt: null
+        });
+
         WebhookDispatcher.dispatchToUrl(
           transaction.callbackUrl,
           success ? 'payment.success' : 'payment.failed',
@@ -171,7 +179,8 @@ export class CallbackProcessor {
               providerRef: transaction.providerRef,
               metadata: transaction.metadata
             }
-          }
+          },
+          merchantKey ? merchantKey.id : undefined // Use the persistent API Key ID as the secret
         ).catch(err => console.error('Custom callback FAILED:', err.message));
       }
 

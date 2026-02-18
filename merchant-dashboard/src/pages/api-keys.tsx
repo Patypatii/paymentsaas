@@ -317,11 +317,19 @@ export default function ApiKeys() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">Auth Token (API Key)</label>
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">Webhook Secret (Key ID)</label>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 rounded-lg bg-background border border-border px-3 py-2.5 font-mono text-sm text-muted italic">
-                    Use an active secret key below
+                  <code className="flex-1 rounded-lg bg-background border border-border px-3 py-2.5 font-mono text-sm text-main select-all">
+                    {keys.find(k => k.isActive)?.id || 'No active key'}
                   </code>
+                  <button
+                    disabled={!keys.find(k => k.isActive)}
+                    onClick={() => copyToClipboard(keys.find(k => k.isActive)?.id || '')}
+                    className="p-2.5 hover:bg-surface rounded-lg text-muted hover:text-primary transition-colors border border-border disabled:opacity-30"
+                    title="Copy Secret"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
@@ -360,6 +368,7 @@ export default function ApiKeys() {
             <thead className="bg-surface/50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Name</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Key ID / Webhook Secret</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Token Prefix</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Last Used</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Status</th>
@@ -376,6 +385,14 @@ export default function ApiKeys() {
                     <div className="flex flex-col">
                       <span>{key.name || 'Secret Key'}</span>
                       <span className="text-[10px] text-muted font-normal">Auth token is this key</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <span className="select-all">{key.id}</span>
+                      <button onClick={() => copyToClipboard(key.id)} className="p-1 hover:text-primary transition-colors">
+                        <Copy className="h-3 w-3" />
+                      </button>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-300">
