@@ -2,6 +2,7 @@ import { ApiKeyModel } from './apiKey.model';
 import { generateApiKey, hashApiKey, verifyApiKey } from '../../common/utils/crypto';
 import { securityConfig } from '../../config/security';
 import { AppError, ErrorCode } from '../../common/constants/errors';
+import { logger } from '../../common/utils/logger';
 
 export class ApiKeyService {
   /**
@@ -34,34 +35,19 @@ export class ApiKeyService {
     merchantId: string;
     merchant: any;
   }> {
-    // 1. We need to find the key by prefix first to optimize, but we don't store prefix indexed for search maybe?
-    // Actually we can't search by keyHash directly because verifyApiKey is likely bcrypt compare.
-    // So we need to fetch ALL active keys for the given prefix? Or just all active keys?
-    // The previous SQL queried ALL active keys for active merchants. That's expensive.
-    // Optimization: API Key usually has a prefix. We can check if apiKey starts with a prefix, 
-    // but here we just iterate all active keys for the merchant? No, the SQL joined matches.
-    // The previous code fetched ALL active keys in the system? No "WHERE ak.is_active = true".
-    // That seems very inefficient if there are many keys. 
-    // Assumption: The provided apiKey contains the prefix? 
-    // Let's assume we have to iterate.
-    // IMPROVEMENT: Retrieve keys by prefix if possible, or just iterate active keys.
-    // For now, let's replicate the logic but we can do better: `verifyApiKey` is expensive.
-    // Usually API keys are stored as `prefix.hash`.
-    // If we can extract the prefix?
+    // Extract prefix from the provided key (e.g. "pk_" from "pk_abc123...")
+    const prefixMatch = apiKey.match(/^([a-z_]+)/);
+    const keyPrefix = prefixMatch ? prefixMatch[1] : null;
 
-    // Filter active keys.
-    // Since we don't know the merchant, we have to find the key.
-    // This is problematic with bcrypt. Mongoose/Mongo Find logic:
-    // We can't find by hash.
-    // Strategy: We will query keys that match the prefix?
-    // `securityConfig.apiKey.prefix` is a global prefix?
-    // If so, it doesn't help distinguish.
+    // Filter active keys by prefix to avoid bcrypt-comparing every key in the system
+    const query: any = { isActive: true, revokedAt: null };
+    if (keyPrefix) {
+      query.keyPrefix = keyPrefix;
+    }
 
-    // Fallback: Fetch all active keys.
-    const activeKeys = await ApiKeyModel.find({
-      isActive: true,
-      revokedAt: null
-    }).populate('merchantId');
+    const activeKeys = await ApiKeyModel.find(query).populate('merchantId');
+
+    logger.debug(`API key validation: checking ${activeKeys.length} candidate key(s) with prefix "${keyPrefix}"`);
 
     for (const keyDoc of activeKeys) {
       // Check if merchant is active

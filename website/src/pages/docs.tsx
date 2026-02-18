@@ -101,13 +101,67 @@ export default function Docs() {
                 </table>
               </div>
 
-              <div className="bg-background rounded-xl border border-border overflow-hidden">
+              <div className="bg-background rounded-xl border border-border overflow-hidden mb-4">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-                  <span className="text-xs text-muted font-mono uppercase">Request Header</span>
+                  <span className="text-xs text-muted font-mono uppercase">Raw HTTP Header</span>
                 </div>
                 <div className="p-6 font-mono text-sm text-main">
-                  <div className="text-muted italic mb-2">// Set this header for every request</div>
+                  <div className="text-muted italic mb-2">// Set this header on every request</div>
                   <div>Authorization: Bearer <span className="text-primary font-bold">YOUR_API_KEY</span></div>
+                </div>
+              </div>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden mb-4">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">NestJS / Axios</span>
+                </div>
+                <div className="p-6 font-mono text-sm leading-relaxed">
+                  <pre className="text-main">{`import axios from 'axios';
+
+const PAYLOR_API_KEY = process.env.PAYLOR_API_KEY; // e.g. payl_live_...
+const PAYLOR_BASE_URL = 'https://apipaylor.webnixke.com/api/v1';
+
+const response = await axios.post(
+  \`\${PAYLOR_BASE_URL}/merchants/payments/stk-push\`,
+  {
+    phone: '254712345678',
+    amount: 1000,
+    reference: 'ORDER-12345',
+    channelId: 'PAYL-XXXXXX',
+    description: 'Payment for Service',
+  },
+  {
+    headers: {
+      'Authorization': \`Bearer \${PAYLOR_API_KEY}\`,
+      'Content-Type': 'application/json',
+    },
+  }
+);`}</pre>
+                </div>
+              </div>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">Node.js / Fetch</span>
+                </div>
+                <div className="p-6 font-mono text-sm leading-relaxed">
+                  <pre className="text-main">{`const response = await fetch(
+  'https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push',
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': \`Bearer \${process.env.PAYLOR_API_KEY}\`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      phone: '254712345678',
+      amount: 1000,
+      reference: 'ORDER-12345',
+      channelId: 'PAYL-XXXXXX',
+      description: 'Payment for Service',
+    }),
+  }
+);`}</pre>
                 </div>
               </div>
             </section>
@@ -326,7 +380,7 @@ export default function Docs() {
   "event": "payment.success",
   "transaction": {
     "id": "TR_A98F2...",
-    "reference": "TOPUP-47219",
+    "reference": "ORDER-12345",
     "amount": 1000,
     "status": "COMPLETED",
     "providerRef": "...",
@@ -335,6 +389,86 @@ export default function Docs() {
     }
   }
 }`}</pre>
+                </div>
+              </div>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden mt-6 mb-4">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">NestJS — Callback Endpoint</span>
+                </div>
+                <div className="p-6 font-mono text-sm leading-relaxed">
+                  <pre className="text-main">{`import { Controller, Post, Headers, Body, HttpCode } from '@nestjs/common';
+import * as crypto from 'crypto';
+
+@Controller('api')
+export class PaylorController {
+  @Post('paylor-callback')
+  @HttpCode(200)
+  handleCallback(
+    @Headers('x-webhook-signature') signature: string,
+    @Body() body: any,
+  ) {
+    // 1. Verify the signature (optional but recommended)
+    const secret = process.env.PAYLOR_WEBHOOK_SECRET;
+    if (secret) {
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(body))
+        .digest('hex');
+      if (signature !== expected) {
+        return { status: 'invalid signature' };
+      }
+    }
+
+    // 2. Handle the event
+    const { event, transaction } = body;
+    if (event === 'payment.success') {
+      // e.g. credit user wallet, fulfill order...
+      console.log('Payment received:', transaction.reference);
+    } else if (event === 'payment.failed') {
+      console.log('Payment failed:', transaction.reference);
+    }
+
+    return { received: true };
+  }
+}`}</pre>
+                </div>
+              </div>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">Express — Callback Endpoint</span>
+                </div>
+                <div className="p-6 font-mono text-sm leading-relaxed">
+                  <pre className="text-main">{`import express from 'express';
+import crypto from 'crypto';
+
+const router = express.Router();
+
+router.post('/paylor-callback', (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const secret = process.env.PAYLOR_WEBHOOK_SECRET;
+
+  // 1. Verify signature
+  if (secret) {
+    const expected = crypto
+      .createHmac('sha256', secret)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+    if (signature !== expected) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+  }
+
+  // 2. Handle the event
+  const { event, transaction } = req.body;
+  if (event === 'payment.success') {
+    // e.g. credit user wallet, fulfill order...
+    console.log('Payment received:', transaction.reference);
+  }
+
+  res.json({ received: true });
+});`}</pre>
                 </div>
               </div>
             </section>

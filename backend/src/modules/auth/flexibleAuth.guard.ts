@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { ApiKeyService } from '../api-keys/apiKey.service';
 import { AppError, ErrorCode } from '../../common/constants/errors';
+import { logger } from '../../common/utils/logger';
 
 /**
  * Unified authentication guard that supports both JWT (Session) and API Keys.
@@ -15,6 +16,9 @@ export async function flexibleAuth(req: Request, _res: Response, next: NextFunct
     }
 
     const token = authHeader.substring(7);
+
+    // DEBUG: Log token shape to diagnose auth failures
+    logger.debug(`[flexibleAuth] Token received — prefix: "${token.substring(0, 6)}...", length: ${token.length}, looksLikeJWT: ${token.split('.').length === 3}`);
 
     // 1. Try to validate as JWT (Session) first
     try {
