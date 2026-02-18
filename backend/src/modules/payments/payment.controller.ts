@@ -9,7 +9,7 @@ const stkPushSchema = z.object({
   phone: phoneNumberSchema,
   amount: z.number().positive().min(1),
   reference: z.string().min(1).max(255),
-  description: z.string().max(255),
+  description: z.string().max(255).optional(), // Fixed: made optional to match service logic
   channelId: z.string().optional(),
   callbackUrl: z.string().url().optional(),
 });

@@ -9,9 +9,9 @@ export interface STKPushRequest {
   phone: string;
   amount: number;
   reference: string;
-  description: string;
+  description?: string;
   channelId?: string;
-  callbackUrl?: string;
+  callbackUrl?: string; // Optional per-transaction callback
 }
 
 export interface STKPushResponse {

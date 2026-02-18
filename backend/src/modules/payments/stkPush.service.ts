@@ -28,6 +28,15 @@ export class STKPushService {
 
       // IMPORTANT: Use our PLATFORM shortcode for collection to match our credentials
       const masterShortcode = darajaConfig.shortcode;
+
+      if (!masterShortcode || masterShortcode.trim() === '') {
+        throw new AppError(
+          ErrorCode.DARAJA_ERROR,
+          'Platform master shortcode is not configured in environment variables (DARAJA_SHORTCODE)',
+          500
+        );
+      }
+
       const password = this.generatePassword(masterShortcode, timestamp);
 
       // Format phone number (ensure it starts with 254)
