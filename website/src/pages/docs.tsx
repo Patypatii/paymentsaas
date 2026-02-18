@@ -189,6 +189,16 @@ export default function Docs() {
                           <p className="text-sm text-muted">A unique internal reference used for tracking top-ups or specific orders.</p>
                         </div>
                       </li>
+                      <li className="flex gap-4">
+                        <div className="flex-shrink-0 w-1 bg-primary/20 rounded-full" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-sm font-bold text-primary">callbackUrl</code>
+                            <span className="text-[10px] bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded uppercase">Optional</span>
+                          </div>
+                          <p className="text-sm text-muted">A unique URL to receive notifications for this specific transaction.</p>
+                        </div>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -198,16 +208,17 @@ export default function Docs() {
                     <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">POST</span>
-                        <span className="text-xs text-muted font-mono">/payments/stk-push</span>
+                        <span className="text-xs text-muted font-mono">/merchants/payments/stk-push</span>
                       </div>
                     </div>
                     <div className="p-6 font-mono text-sm leading-relaxed">
                       <pre className="text-main">{`{
   "phone": "254712345678",
   "amount": 1000,
-  "reference": "TOPUP-47219",
+  "reference": "ORDER-12345",
   "channelId": "PAYL-XJ7K2P",
-  "description": "Internal Wallet Credit"
+  "callbackUrl": "https://apiskan.com/api/callback",
+  "description": "Payment for Service"
 }`}</pre>
                     </div>
                   </div>
@@ -241,11 +252,11 @@ export default function Docs() {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">GET</span>
-                    <span className="text-xs text-muted font-mono">/payments/transactions/:id</span>
+                    <span className="text-xs text-muted font-mono">/merchants/payments/transactions/:id</span>
                   </div>
                 </div>
                 <div className="p-6 font-mono text-sm text-main">
-                  <div>GET https://apipaylor.webnixke.com/api/v1/payments/transactions/<span className="text-primary font-bold">TR_A98F2...</span></div>
+                  <div>GET https://apipaylor.webnixke.com/api/v1/merchants/payments/transactions/<span className="text-primary font-bold">TR_A98F2...</span></div>
                 </div>
               </div>
             </section>
@@ -282,6 +293,51 @@ export default function Docs() {
               </div>
             </section>
 
+            <section id="webhooks-overview" className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-green-500/10 text-green-400"><ExternalLink className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Webhooks Overview</h2>
+              </div>
+              <p className="text-muted mb-8 leading-relaxed">
+                Webhooks allow your application to receive real-time notifications when a transaction status changes. Instead of polling the status API, Paylor will push data to your server as soon as the event occurs.
+              </p>
+              <div className="bg-background rounded-xl border border-border p-6 mb-8">
+                <h3 className="text-sm font-bold text-main uppercase tracking-widest mb-4">Steps to Integrate</h3>
+                <ol className="list-decimal list-inside space-y-3 text-muted text-sm">
+                  <li>Create an HTTP POST endpoint on your server (e.g., <code className="text-primary">/api/paylor-webhook</code>).</li>
+                  <li>Go to your <Link href="/webhooks" className="text-primary hover:underline">Dashboard &gt; Webhooks</Link> and add your URL.</li>
+                  <li>Subscribe to events like <code className="text-primary">payment.success</code> and <code className="text-primary">payment.failed</code>.</li>
+                  <li>Secure your endpoint by verifying the <code className="text-primary">X-Webhook-Signature</code> header.</li>
+                </ol>
+              </div>
+            </section>
+
+            <section id="webhook-payload" className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400"><RefreshCcw className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Payload Structure</h2>
+              </div>
+              <div className="bg-background rounded-xl border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">POST Webhook Payload</span>
+                </div>
+                <div className="p-6 font-mono text-sm leading-relaxed">
+                  <pre className="text-main">{`{
+  "event": "payment.success",
+  "transaction": {
+    "id": "TR_A98F2...",
+    "reference": "TOPUP-47219",
+    "amount": 1000,
+    "status": "COMPLETED",
+    "providerRef": "...",
+    "metadata": {
+      "mpesaReceipt": "RFL8S2K9P0"
+    }
+  }
+}`}</pre>
+                </div>
+              </div>
+            </section>
           </main>
         </div>
       </div>

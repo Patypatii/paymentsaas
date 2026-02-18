@@ -13,6 +13,7 @@ export interface IPayment extends Document {
     customerEmail?: string;
     description?: string;
     channelId?: mongoose.Types.ObjectId;
+    callbackUrl?: string;
     metadata?: any;
     createdAt: Date;
     updatedAt: Date;
@@ -39,6 +40,7 @@ const PaymentSchema: Schema = new Schema({
     customerEmail: { type: String },
     description: { type: String },
     channelId: { type: Schema.Types.ObjectId, ref: 'Channel' },
+    callbackUrl: { type: String },
     metadata: { type: Schema.Types.Mixed },
 }, {
     timestamps: true,

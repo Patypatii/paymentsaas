@@ -11,6 +11,7 @@ const stkPushSchema = z.object({
   reference: z.string().min(1).max(255),
   description: z.string().max(255),
   channelId: z.string().optional(),
+  callbackUrl: z.string().url().optional(),
 });
 
 const getMerchantId = (req: Request): string => {

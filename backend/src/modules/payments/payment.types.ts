@@ -11,6 +11,7 @@ export interface STKPushRequest {
   reference: string;
   description: string;
   channelId?: string;
+  callbackUrl?: string;
 }
 
 export interface STKPushResponse {

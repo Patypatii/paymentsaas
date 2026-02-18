@@ -135,6 +135,7 @@ export class PaymentService {
 
       description: request.description || 'Payment',
       channelId: request.channelId ? new mongoose.Types.ObjectId(request.channelId) : undefined,
+      callbackUrl: request.callbackUrl,
     });
 
     try {

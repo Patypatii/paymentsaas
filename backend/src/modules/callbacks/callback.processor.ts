@@ -156,6 +156,25 @@ export class CallbackProcessor {
       // 5. Dispatch Webhook & Email
       console.log('Dispatching notifications...');
 
+      // Custom Callback URL (Per-transaction)
+      if (transaction.callbackUrl) {
+        WebhookDispatcher.dispatchToUrl(
+          transaction.callbackUrl,
+          success ? 'payment.success' : 'payment.failed',
+          {
+            event: success ? 'payment.success' : 'payment.failed',
+            transaction: {
+              id: transaction.id,
+              reference: transaction.reference,
+              amount: transaction.amount,
+              status: transaction.status,
+              providerRef: transaction.providerRef,
+              metadata: transaction.metadata
+            }
+          }
+        ).catch(err => console.error('Custom callback FAILED:', err.message));
+      }
+
       // Email Notification to Merchant (Regular Payments)
       if (success && !transaction.reference.startsWith('TOPUP-')) {
         const { MerchantModel } = await import('../merchants/merchant.model');

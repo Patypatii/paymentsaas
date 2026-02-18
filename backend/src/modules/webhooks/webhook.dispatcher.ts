@@ -100,4 +100,35 @@ export class WebhookDispatcher {
       await this.dispatch(webhook.id, 'transaction.updated', transactionData);
     }
   }
+
+  /**
+   * Dispatch to a specific URL (ephemeral callback)
+   */
+  static async dispatchToUrl(
+    url: string,
+    eventType: string,
+    payload: any,
+    secret?: string
+  ): Promise<void> {
+    const webhookPayload = JSON.stringify(payload);
+    const signature = this.generateSignature(webhookPayload, secret);
+
+    try {
+      await axios.post(url, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Webhook-Signature': signature,
+          'X-Webhook-Event': eventType,
+        },
+        timeout: 10000,
+      });
+      logger.info('Custom callback delivered successfully', { url, eventType });
+    } catch (error: any) {
+      logger.error('Custom callback delivery failed', {
+        url,
+        eventType,
+        error: error.message,
+      });
+    }
+  }
 }
