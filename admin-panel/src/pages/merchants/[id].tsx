@@ -43,7 +43,7 @@ export default function MerchantDetail() {
     const fetchMerchantData = async () => {
         try {
             setLoading(true);
-            const response = await api.get(`/merchants/${id}`);
+            const response = await api.get(`/admin/merchants/${id}`);
             const { merchant, stats } = response.data;
             setMerchant(merchant);
             setStats(stats);
@@ -67,7 +67,7 @@ export default function MerchantDetail() {
         e.preventDefault();
         try {
             setSubmitting(true);
-            await api.put(`/merchants/${id}`, editForm);
+            await api.put(`/admin/merchants/${id}`, editForm);
             await fetchMerchantData();
             setIsEditModalOpen(false);
         } catch (error) {
@@ -81,7 +81,7 @@ export default function MerchantDetail() {
         e.preventDefault();
         try {
             setSubmitting(true);
-            await api.post(`/merchants/${id}/wallet/adjust`, {
+            await api.post(`/admin/merchants/${id}/wallet/adjust`, {
                 amount: Number(balanceForm.amount),
                 description: balanceForm.description
             });
