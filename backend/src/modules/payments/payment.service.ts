@@ -68,10 +68,17 @@ export class PaymentService {
     let channel: any = null;
 
     if (request.channelId) {
-      // Find channel by ID or Alias
-      const query = mongoose.Types.ObjectId.isValid(request.channelId)
-        ? { _id: request.channelId, merchantId, status: 'ACTIVE' }
-        : { alias: request.channelId, merchantId, status: 'ACTIVE' };
+      // Find channel by ID, Alias, or Number (Fixed: added support for 'number' like Till/Paybill)
+      const query: any = { merchantId, status: 'ACTIVE' };
+
+      if (mongoose.Types.ObjectId.isValid(request.channelId)) {
+        query._id = request.channelId;
+      } else {
+        query.$or = [
+          { alias: request.channelId },
+          { number: request.channelId }
+        ];
+      }
 
       channel = await ChannelModel.findOne(query);
 
@@ -132,9 +139,8 @@ export class PaymentService {
       provider: 'MPESA',
       reference: request.reference,
       customerPhone: request.phone,
-
       description: request.description || 'Payment',
-      channelId: request.channelId ? new mongoose.Types.ObjectId(request.channelId) : undefined,
+      channelId: channel ? channel._id : undefined, // Fixed: Use channel._id since channelId in request might be an alias
       callbackUrl: request.callbackUrl,
     });
 
