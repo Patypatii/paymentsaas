@@ -1,6 +1,6 @@
 import ImageKit from 'imagekit';
 import { config } from '../../config/env';
-import { KYCDocumentModel, KYCDocumentType } from './kyc.model';
+import { KYCDocumentModel, KYCDocumentType, KYCStatus } from './kyc.model';
 import { AppError, ErrorCode } from '../../common/constants/errors';
 import mongoose from 'mongoose';
 
@@ -39,7 +39,7 @@ export class KYCService {
             // Update existing record
             existing.fileUrl = data.fileUrl;
             existing.fileId = data.fileId;
-            existing.status = 'DRAFT' as any; // Keep/reset to draft on upload
+            existing.status = KYCStatus.DRAFT; // Keep/reset to draft on upload
             await existing.save();
             return existing;
         }
@@ -49,7 +49,7 @@ export class KYCService {
             type: data.type,
             fileUrl: data.fileUrl,
             fileId: data.fileId,
-            status: 'DRAFT' as any,
+            status: KYCStatus.DRAFT,
         });
 
         return document;
@@ -83,3 +83,5 @@ export class KYCService {
         }).sort({ createdAt: -1 });
     }
 }
+
+/* cspell:ignore imagekit */

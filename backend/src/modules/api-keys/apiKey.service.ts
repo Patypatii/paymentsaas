@@ -105,6 +105,17 @@ export class ApiKeyService {
   }
 
   /**
+   * Permanently delete an API key
+   */
+  static async hardDeleteKey(merchantId: string, keyId: string): Promise<void> {
+    const result = await ApiKeyModel.deleteOne({ _id: keyId, merchantId });
+
+    if (result.deletedCount === 0) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, 'API key not found', 404);
+    }
+  }
+
+  /**
    * List API keys for a merchant
    */
   static async listKeys(merchantId: string): Promise<any[]> {

@@ -82,23 +82,23 @@ export default function DirectSTKPush() {
                         <Send className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Direct STK Push</h1>
-                        <p className="text-gray-400 text-sm">Initiate an M-Pesa STK push payment directly to one of your channels.</p>
+                        <h1 className="text-2xl font-bold text-main">Direct STK Push</h1>
+                        <p className="text-muted text-sm">Initiate an M-Pesa STK push payment directly to one of your channels.</p>
                     </div>
                 </div>
 
-                <div className="glass-card p-8 rounded-2xl border border-white/10">
+                <div className="glass-card p-8 rounded-2xl border border-border">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                     <Phone className="h-4 w-4" /> Customer Phone
                                 </label>
                                 <input
                                     type="text"
                                     required
                                     placeholder="e.g. 254712345678"
-                                    className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
+                                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-main focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 />
@@ -106,7 +106,7 @@ export default function DirectSTKPush() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                     <DollarSign className="h-4 w-4" /> Amount (KES)
                                 </label>
                                 <input
@@ -114,7 +114,7 @@ export default function DirectSTKPush() {
                                     required
                                     min="1"
                                     placeholder="1.00"
-                                    className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
+                                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-main focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                                     value={formData.amount}
                                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                                 />
@@ -122,11 +122,11 @@ export default function DirectSTKPush() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                 <Tag className="h-4 w-4" /> Settlement Channel
                             </label>
                             <select
-                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-main focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
                                 value={formData.channelId}
                                 onChange={(e) => setFormData({ ...formData, channelId: e.target.value })}
                                 disabled={loadingChannels}
@@ -138,7 +138,10 @@ export default function DirectSTKPush() {
                                 ) : (
                                     channels.map(channel => (
                                         <option key={channel.id} value={channel.id}>
-                                            {channel.name} — {channel.type} ({channel.number})
+                                            {channel.type === 'BANK'
+                                                ? `${channel.name} — ${channel.bankName} (${channel.accountNumber})`
+                                                : `${channel.name} — ${channel.type} (${channel.number})`
+                                            }
                                         </option>
                                     ))
                                 )}
@@ -147,7 +150,7 @@ export default function DirectSTKPush() {
 
                         <div className="space-y-1.5">
                             <div className="flex justify-between items-end">
-                                <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                                <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                     <FileText className="h-4 w-4" /> Transaction Reference
                                 </label>
                                 <button
@@ -163,7 +166,7 @@ export default function DirectSTKPush() {
                                 type="text"
                                 required
                                 placeholder="e.g. INV-10203"
-                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
+                                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-main focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                                 value={formData.reference}
                                 onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                             />
@@ -171,11 +174,11 @@ export default function DirectSTKPush() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-medium text-gray-400">Description</label>
+                            <label className="block text-sm font-medium text-muted">Description</label>
                             <textarea
                                 rows={3}
                                 placeholder="What is this payment for?"
-                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all resize-none"
+                                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-main focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all resize-none"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />
@@ -196,7 +199,7 @@ export default function DirectSTKPush() {
                             disabled={loading || channels.length === 0}
                             className={clsx(
                                 "w-full py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all",
-                                "bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] mt-4"
+                                "bg-primary text-main hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] mt-4"
                             )}
                         >
                             {loading ? (

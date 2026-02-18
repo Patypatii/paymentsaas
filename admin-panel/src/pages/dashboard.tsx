@@ -36,64 +36,70 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-red-500"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center transition-colors duration-300">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
       </div>
     );
   }
 
   const kpis = [
-    { name: 'Total Merchants', value: stats?.merchants?.total || 0, icon: Users, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { name: 'Active Merchants', value: stats?.merchants?.active || 0, icon: Activity, color: 'text-green-400', bg: 'bg-green-400/10' },
-    { name: 'Total Transactions', value: stats?.transactions?.total || 0, icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-    { name: 'Active Subscriptions', value: stats?.subscriptions?.active || 0, icon: Server, color: 'text-purple-400', bg: 'bg-purple-400/10' },
+    { name: 'Total Merchants', value: stats?.merchants?.total || 0, icon: Users, color: 'text-primary', bg: 'bg-primary/10' },
+    { name: 'Active Merchants', value: stats?.merchants?.active || 0, icon: Activity, color: 'text-green-500', bg: 'bg-green-500/10' },
+    { name: 'Total Transactions', value: stats?.transactions?.total || 0, icon: AlertTriangle, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    { name: 'Active Subscriptions', value: stats?.subscriptions?.active || 0, icon: Server, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   ];
 
   return (
     <AdminLayout title="Dashboard - Admin Panel">
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-white">System Overview</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-main">System Overview</h1>
 
         {/* KPI Grid */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {kpis.map((item) => (
-            <div key={item.name} className="relative overflow-hidden rounded-xl bg-white/5 p-4 shadow ring-1 ring-white/10 sm:px-6 sm:py-6 glass-card">
-              <div className="absolute rounded-md p-3 bg-white/5">
-                <item.icon className={`h-6 w-6 ${item.color}`} />
+            <div key={item.name} className="relative overflow-hidden rounded-xl bg-surface shadow ring-1 ring-border glass-card transition-colors duration-300">
+              <div className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="rounded-md p-2 sm:p-3 bg-surface border border-border w-fit">
+                    <item.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${item.color}`} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs sm:text-sm font-medium text-muted">{item.name}</p>
+                    <p className="text-xl sm:text-2xl font-semibold text-main">{item.value}</p>
+                  </div>
+                </div>
               </div>
-              <p className="ml-16 truncate text-sm font-medium text-gray-400">{item.name}</p>
-              <p className={`ml-16 text-2xl font-semibold text-white`}>{item.value}</p>
             </div>
           ))}
         </div>
 
         {/* Recent Alerts */}
-        <div className="rounded-xl border border-white/10 bg-[#111827]/50 p-6 glass-card">
+        <div className="rounded-xl border border-border bg-surface p-6 glass-card transition-colors duration-300">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck className="h-5 w-5 text-green-500" />
-            <h3 className="text-lg font-medium leading-6 text-white">Security Events</h3>
+            <h3 className="text-lg font-medium leading-6 text-main">Security Events</h3>
           </div>
-          <div className="rounded-lg border border-white/5 overflow-hidden">
-            <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-white/5">
+          <div className="rounded-lg border border-border overflow-hidden">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-surface">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Severity</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Event</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Source IP</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Severity</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Event</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Time</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Source IP</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 bg-transparent">
+              <tbody className="divide-y divide-border bg-transparent">
                 {auditLogs.map((log, index) => (
-                  <tr key={log.id || index} className="hover:bg-white/5 transition-colors">
+                  <tr key={log.id || index} className="hover:bg-surface/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-500/20">Medium</span>
+                      <span className="inline-flex items-center rounded-full bg-yellow-500/10 px-2 py-1 text-xs font-medium text-yellow-600 dark:text-yellow-400 ring-1 ring-inset ring-yellow-500/20">Medium</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{log.action}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-main">{log.action}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">{log.ipAddress}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-muted">{log.ipAddress}</td>
                   </tr>
                 ))}
               </tbody>

@@ -12,12 +12,12 @@ const AdminLayout = ({ children, title = 'Admin Panel' }: AdminLayoutProps) => {
             <Head>
                 <title>{title}</title>
             </Head>
-            <div className="min-h-screen bg-[#0B0F1A]">
+            <div className="min-h-screen bg-background transition-colors duration-300 flex flex-col">
                 <Sidebar />
-                <div className="md:pl-64 flex flex-col min-h-screen">
-                    <main className="flex-1">
-                        <div className="py-6">
-                            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                <div className="lg:pl-64 flex flex-col flex-1">
+                    <main className="flex-1 pb-24 lg:pb-8 pt-16 lg:pt-0">
+                        <div className="py-6 h-full">
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
                                 {children}
                             </div>
                         </div>

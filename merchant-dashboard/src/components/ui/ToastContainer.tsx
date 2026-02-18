@@ -27,18 +27,18 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove
                         className="pointer-events-auto"
                     >
                         <div className={`
-              flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl min-w-[300px] max-w-md
-              ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-100' :
-                                toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-100' :
-                                    'bg-blue-500/10 border-blue-500/20 text-blue-100'}
+              flex items-center gap-3 px-4 py-3 rounded-xl border-2 backdrop-blur-md shadow-2xl min-w-[300px] max-w-md bg-surface
+              ${toast.type === 'success' ? 'border-green-500/30 text-green-600 dark:text-green-400' :
+                                toast.type === 'error' ? 'border-red-500/30 text-red-600 dark:text-red-400' :
+                                    'border-blue-500/30 text-blue-600 dark:text-blue-400'}
             `}>
                             <div className="flex-shrink-0">
-                                {toast.type === 'success' && <CheckCircle className="h-5 w-5 text-green-400" />}
-                                {toast.type === 'error' && <XCircle className="h-5 w-5 text-red-400" />}
-                                {toast.type === 'info' && <Info className="h-5 w-5 text-blue-400" />}
+                                {toast.type === 'success' && <CheckCircle className="h-5 w-5" />}
+                                {toast.type === 'error' && <XCircle className="h-5 w-5" />}
+                                {toast.type === 'info' && <Info className="h-5 w-5" />}
                             </div>
 
-                            <p className="text-sm font-medium flex-1">{toast.message}</p>
+                            <p className="text-sm font-bold flex-1">{toast.message}</p>
 
                             <button
                                 onClick={() => onRemove(toast.id)}

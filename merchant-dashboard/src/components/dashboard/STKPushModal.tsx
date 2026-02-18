@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { X, Send, Loader2, Phone, DollarSign, Tag, FileText } from 'lucide-react';
 import clsx from 'clsx';
+import { useToast } from '../../context/ToastContext';
+
 
 interface STKPushModalProps {
     isOpen: boolean;
@@ -9,7 +11,9 @@ interface STKPushModalProps {
 }
 
 export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
+    const { success, error } = useToast();
     const [loading, setLoading] = useState(false);
+
     const [channels, setChannels] = useState<any[]>([]);
     const [loadingChannels, setLoadingChannels] = useState(false);
 
@@ -50,10 +54,10 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
                 ...formData,
                 amount: parseFloat(formData.amount)
             });
-            alert('STK Push initiated successfully!');
+            success('STK Push initiated successfully!');
             onClose();
-        } catch (error: any) {
-            alert(error.response?.data?.message || 'Failed to initiate STK Push');
+        } catch (err: any) {
+            error(err.response?.data?.message || 'Failed to initiate STK Push');
         } finally {
             setLoading(false);
         }
@@ -63,10 +67,10 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-white/10 relative animate-in zoom-in duration-200">
+            <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-border relative animate-in zoom-in duration-200">
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors"
+                    className="absolute top-4 right-4 p-2 text-muted hover:text-main transition-colors"
                 >
                     <X className="h-5 w-5" />
                 </button>
@@ -75,19 +79,19 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
                     <div className="p-2 bg-primary/20 rounded-lg">
                         <Send className="h-5 w-5 text-primary" />
                     </div>
-                    <h2 className="text-xl font-bold text-white">Direct STK Push</h2>
+                    <h2 className="text-xl font-bold text-main">Direct STK Push</h2>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label className="block text-sm font-medium text-muted flex items-center gap-2">
                             <Phone className="h-4 w-4" /> Phone Number
                         </label>
                         <input
                             type="text"
                             required
                             placeholder="e.g. 254712345678"
-                            className="w-full bg-[#0B0F1A] border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-primary outline-none"
+                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-main focus:ring-1 focus:ring-primary outline-none"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         />
@@ -95,24 +99,24 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                 <DollarSign className="h-4 w-4" /> Amount
                             </label>
                             <input
                                 type="number"
                                 required
                                 placeholder="KES 1.00"
-                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-primary outline-none"
+                                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-main focus:ring-1 focus:ring-primary outline-none"
                                 value={formData.amount}
                                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                            <label className="block text-sm font-medium text-muted flex items-center gap-2">
                                 <Tag className="h-4 w-4" /> Channel
                             </label>
                             <select
-                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-primary outline-none"
+                                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-main focus:ring-1 focus:ring-primary outline-none"
                                 value={formData.channelId}
                                 onChange={(e) => setFormData({ ...formData, channelId: e.target.value })}
                                 disabled={loadingChannels}
@@ -130,25 +134,25 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <label className="block text-sm font-medium text-muted flex items-center gap-2">
                             <FileText className="h-4 w-4" /> Reference
                         </label>
                         <input
                             type="text"
                             required
                             placeholder="e.g. INV-001"
-                            className="w-full bg-[#0B0F1A] border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-primary outline-none"
+                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-main focus:ring-1 focus:ring-primary outline-none"
                             value={formData.reference}
                             onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-400">Description</label>
+                        <label className="block text-sm font-medium text-muted">Description</label>
                         <textarea
                             rows={2}
                             placeholder="Optional payment notes..."
-                            className="w-full bg-[#0B0F1A] border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-primary outline-none resize-none"
+                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-main focus:ring-1 focus:ring-primary outline-none resize-none"
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
@@ -159,7 +163,7 @@ export default function STKPushModal({ isOpen, onClose }: STKPushModalProps) {
                         disabled={loading || channels.length === 0}
                         className={clsx(
                             "w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all mt-4",
-                            "bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
+                            "bg-primary text-main hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
                         )}
                     >
                         {loading ? (

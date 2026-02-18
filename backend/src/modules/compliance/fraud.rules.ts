@@ -1,6 +1,7 @@
-import { pool } from '../../config/database';
 import { logger } from '../../common/utils/logger';
 import { MerchantModel } from '../merchants/merchant.model';
+import { PaymentModel } from '../payments/payment.model';
+import mongoose from 'mongoose';
 
 export interface FraudCheckResult {
   isFraud: boolean;
@@ -21,16 +22,29 @@ export class FraudRules {
     const reasons: string[] = [];
 
     try {
-      // Check 1: Unusually large amount
-      const avgResult = await pool.query(
-        `SELECT AVG(amount) as avg_amount, MAX(amount) as max_amount
-         FROM transactions
-         WHERE merchant_id = $1 AND created_at > NOW() - INTERVAL '30 days'`,
-        [merchantId]
-      );
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      if (avgResult.rows[0].avg_amount) {
-        const avgAmount = parseFloat(avgResult.rows[0].avg_amount);
+      // Check 1: Unusually large amount
+      const stats = await PaymentModel.aggregate([
+        {
+          $match: {
+            merchantId: new mongoose.Types.ObjectId(merchantId),
+            createdAt: { $gt: thirtyDaysAgo },
+            status: 'COMPLETED'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            avgAmount: { $avg: '$amount' },
+            maxAmount: { $max: '$amount' }
+          }
+        }
+      ]);
+
+      if (stats.length > 0 && stats[0].avgAmount) {
+        const avgAmount = stats[0].avgAmount;
         if (amount > avgAmount * 5) {
           score += 30;
           reasons.push('Amount significantly higher than average');
@@ -38,14 +52,15 @@ export class FraudRules {
       }
 
       // Check 2: Rapid transactions from same phone
-      const rapidResult = await pool.query(
-        `SELECT COUNT(*) as count
-         FROM transactions
-         WHERE merchant_id = $1 AND phone = $2 AND created_at > NOW() - INTERVAL '5 minutes'`,
-        [merchantId, phone]
-      );
+      const fiveMinutesAgo = new Date();
+      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-      const rapidCount = parseInt(rapidResult.rows[0].count, 10);
+      const rapidCount = await PaymentModel.countDocuments({
+        merchantId,
+        customerPhone: phone,
+        createdAt: { $gt: fiveMinutesAgo }
+      });
+
       if (rapidCount > 5) {
         score += 40;
         reasons.push('Too many rapid transactions from same phone');

@@ -36,9 +36,31 @@ export class ChannelService {
             throw new AppError(ErrorCode.VALIDATION_ERROR, 'Channel number already exists for this type', 400);
         }
 
+        // Generate a unique alias (e.g. PAYL-XXXXXX)
+        const generateAlias = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude ambiguous chars like 0, O, 1, I
+            let result = 'PAYL-';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
+        let alias = generateAlias();
+        let isUnique = false;
+        while (!isUnique) {
+            const exists = await ChannelModel.findOne({ alias });
+            if (!exists) {
+                isUnique = true;
+            } else {
+                alias = generateAlias();
+            }
+        }
+
         return ChannelModel.create({
             merchantId: new mongoose.Types.ObjectId(merchantId),
             ...data,
+            alias
         });
     }
 
@@ -82,3 +104,5 @@ export class ChannelService {
         return channel;
     }
 }
+
+/* cspell:ignore PAYL ABCDEFGHJKLMNPQRSTUVWXYZ */

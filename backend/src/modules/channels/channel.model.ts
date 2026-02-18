@@ -18,6 +18,7 @@ export interface IChannel extends Document {
     number: string;
     bankName?: string;
     accountNumber?: string;
+    alias: string;
     status: ChannelStatus;
     createdAt: Date;
     updatedAt: Date;
@@ -34,6 +35,7 @@ const ChannelSchema: Schema = new Schema({
     number: { type: String, required: true, trim: true },
     bankName: { type: String, trim: true },
     accountNumber: { type: String, trim: true },
+    alias: { type: String, required: true, unique: true, trim: true },
     status: {
         type: String,
         enum: Object.values(ChannelStatus),

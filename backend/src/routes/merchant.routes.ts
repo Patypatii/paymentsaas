@@ -3,8 +3,10 @@ import { merchantController } from '../modules/merchants/merchant.controller';
 import { paymentController } from '../modules/payments/payment.controller';
 import { apiKeyController } from '../modules/api-keys/apiKey.controller';
 import { subscriptionController } from '../modules/subscriptions/subscription.controller';
+import { walletController } from '../modules/wallet/wallet.controller';
 import { kycController } from '../modules/kyc/kyc.controller';
 import { channelController } from '../modules/channels/channel.controller';
+import { webhookController } from '../modules/webhooks/webhook.controller';
 import { jwtGuard } from '../modules/auth/jwt.guard';
 import { flexibleAuth } from '../modules/auth/flexibleAuth.guard';
 import { createRateLimiter } from '../common/middleware/rateLimiter';
@@ -16,7 +18,17 @@ merchantRoutes.post('/register', merchantController.register);
 
 // Dashboard-only routes (Require JWT Session)
 merchantRoutes.use(jwtGuard);
+
+// Wallet Management
+merchantRoutes.get('/wallet', walletController.getWallet);
+merchantRoutes.post('/wallet/topup', walletController.initiateTopUp);
+merchantRoutes.get('/wallet/topup/:reference', walletController.getTopUpStatus);
+merchantRoutes.get('/pricing', walletController.getPricing);
+
 merchantRoutes.get('/profile', merchantController.getProfile);
+merchantRoutes.patch('/profile', merchantController.updateProfile);
+merchantRoutes.patch('/profile/avatar', merchantController.updateProfilePicture);
+merchantRoutes.patch('/profile/bio', merchantController.updateBio);
 merchantRoutes.get('/payments/stats', paymentController.getDashboardStats);
 merchantRoutes.get('/payments/transactions', paymentController.listTransactions);
 
@@ -24,6 +36,7 @@ merchantRoutes.get('/payments/transactions', paymentController.listTransactions)
 merchantRoutes.get('/api-keys', apiKeyController.listKeys);
 merchantRoutes.post('/api-keys', apiKeyController.createKey);
 merchantRoutes.delete('/api-keys/:keyId', apiKeyController.revokeKey);
+merchantRoutes.delete('/api-keys/:keyId/permanent', apiKeyController.deleteKey);
 
 // Subscription management
 merchantRoutes.get('/subscription', subscriptionController.getSubscription);
@@ -31,10 +44,16 @@ merchantRoutes.post('/subscription', subscriptionController.createSubscription);
 merchantRoutes.delete('/subscription', subscriptionController.cancelSubscription);
 
 // Channel management
+merchantRoutes.get('/channels/sync-aliases', channelController.syncAliases);
 merchantRoutes.get('/channels', channelController.listChannels);
 merchantRoutes.post('/channels', channelController.createChannel);
 merchantRoutes.patch('/channels/:channelId', channelController.updateChannel);
 merchantRoutes.delete('/channels/:channelId', channelController.deleteChannel);
+
+// Webhook management
+merchantRoutes.get('/webhooks', webhookController.listWebhooks);
+merchantRoutes.post('/webhooks', webhookController.createWebhook);
+merchantRoutes.delete('/webhooks/:webhookId', webhookController.deleteWebhook);
 
 // KYC management
 merchantRoutes.get('/kyc/auth', kycController.getAuthParams);
@@ -52,3 +71,5 @@ paymentRoutes.get('/transactions', paymentController.listTransactions);
 paymentRoutes.get('/transactions/:transactionId', paymentController.getTransaction);
 
 merchantRoutes.use('/payments', paymentRoutes);
+
+/* cspell:ignore topup */

@@ -45,16 +45,16 @@ export class STKPushService {
         TransactionType: transactionType,
         Amount: Math.round(request.amount),
         PartyA: phone,
-        PartyB: masterShortcode,
+        PartyB: merchantShortcode, // Send to the specific Channel/Paybill (e.g. Bank Paybill)
         PhoneNumber: phone,
         CallBackURL: darajaConfig.callbackUrl,
-        AccountReference: request.reference.substring(0, 12), // Daraja limit
-        TransactionDesc: request.description.substring(0, 18), // Daraja limit
+        AccountReference: request.reference.substring(0, 14), // Increased limit for Bank Accounts
+        TransactionDesc: (request.description && request.description.trim().length > 0) ? request.description.substring(0, 13) : 'Payment',
       };
 
       logger.info('Daraja STK Push Payload', {
         initiator: masterShortcode,
-        targetMerchant: merchantShortcode,
+        targetPaybill: merchantShortcode,
         TransactionType: payload.TransactionType,
         AccountReference: payload.AccountReference,
         hasToken: !!accessToken

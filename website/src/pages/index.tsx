@@ -40,11 +40,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-blue-500/5 blur-[100px] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center max-w-3xl mx-auto mb-20">
-            <span className="text-blue-400 font-semibold tracking-wider uppercase text-sm">Why Paylor</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mt-4 mb-6">
+            <span className="text-primary font-semibold tracking-wider uppercase text-sm">Why Paylor</span>
+            <h2 className="text-3xl md:text-5xl font-bold text-main mt-4 mb-6">
               Run your business bila hustle!
             </h2>
-            <p className="text-gray-400 text-lg leading-relaxed">
+            <p className="text-muted text-lg leading-relaxed">
               From online stores to physical shops, websites, or developer APIs, Paylor empowers you with world-class, user-friendly payment automation solutions tailored to your needs.
             </p>
           </div>
@@ -59,16 +59,16 @@ export default function Home() {
                   transition={{ duration: 0.8 }}
                   className="flex-1 space-y-8"
                 >
-                  <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+                  <h3 className="text-3xl md:text-4xl font-bold text-main leading-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-400 text-lg leading-relaxed">
+                  <p className="text-muted text-lg leading-relaxed">
                     {feature.description}
                   </p>
-                  <div className="flex items-center gap-4 text-blue-400 font-medium group cursor-pointer">
+                  <Link href="#services" className="flex items-center gap-4 text-primary font-medium group cursor-pointer">
                     <span>Learn more</span>
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
-                  </div>
+                  </Link>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -77,8 +77,8 @@ export default function Home() {
                   transition={{ duration: 0.8 }}
                   className="flex-1 relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl transform rotate-12" />
-                  <div className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden shadow-2xl glass-card">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 blur-3xl transform rotate-12" />
+                  <div className="relative rounded-2xl border border-border bg-surface backdrop-blur-sm overflow-hidden shadow-2xl glass-card">
                     <img
                       src={feature.image}
                       alt={feature.title}
@@ -93,39 +93,39 @@ export default function Home() {
       </section>
 
       {/* Developer API Section */}
-      <section className="py-24 bg-[#0B0F1A] relative border-t border-white/5">
+      <section className="py-24 bg-background relative border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-sm text-blue-400 mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
                 <Code className="h-4 w-4" />
                 Developer First
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+              <h2 className="text-3xl md:text-5xl font-bold text-main mb-6">
                 Secure Developer APIs
               </h2>
-              <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+              <p className="text-muted text-lg mb-8 leading-relaxed">
                 With secure and easy-to-integrate APIs, Pay Hero allows businesses to connect their existing systems, enabling them to manage payments directly from their applications. The APIs offer high security and flexibility.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/docs"
-                  className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-white/10 border border-white/10 rounded-lg hover:bg-white/20 transition-all"
+                  className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-main bg-surface border border-border rounded-lg hover:bg-surface/80 transition-all"
                 >
                   Read Documentation
                 </Link>
                 <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-all shadow-lg hover:shadow-blue-500/25"
+                  href={process.env.NEXT_PUBLIC_REGISTER_URL || "/register"}
+                  className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-all shadow-lg hover:shadow-primary/25"
                 >
                   Get API Keys
                 </Link>
               </div>
             </div>
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-              <div className="relative rounded-lg bg-[#0F1623] ring-1 ring-white/10 p-6 font-mono text-sm leading-6 text-gray-400 overflow-hidden shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/5">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+              <div className="relative rounded-lg bg-[#0F1623] ring-1 ring-border p-6 font-mono text-sm leading-6 text-gray-400 overflow-hidden shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-border/5">
                   <span className="text-green-400">POST</span>
                   <span className="text-gray-500">/api/v1/payments/initiate</span>
                 </div>
@@ -148,24 +148,24 @@ export default function Home() {
 
       {/* Business Types Grid */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-blue-900/5" />
+        <div className="absolute inset-0 bg-primary/5" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Solutions For Any Business</h2>
-            <p className="text-xl text-gray-400">Streamline. Innovate. Succeed.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-main mb-4">Solutions For Any Business</h2>
+            <p className="text-xl text-muted">Streamline. Innovate. Succeed.</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {businessTypes.map((type, i) => (
-              <div key={i} className="flex items-center justify-center p-6 glass-card rounded-xl border border-white/5 hover:border-blue-500/30 transition-all hover:-translate-y-1 cursor-default text-center">
-                <span className="text-gray-300 font-medium">{type}</span>
+              <div key={i} className="flex items-center justify-center p-6 glass-card rounded-xl border border-border hover:border-primary/30 transition-all hover:-translate-y-1 cursor-default text-center">
+                <span className="text-muted font-medium">{type}</span>
               </div>
             ))}
-            <div className="flex items-center justify-center p-6 bg-blue-600 rounded-xl hover:bg-blue-500 transition-all cursor-pointer">
+            <Link href={process.env.NEXT_PUBLIC_REGISTER_URL || "/register"} className="flex items-center justify-center p-6 bg-primary rounded-xl hover:bg-primary-hover transition-all cursor-pointer">
               <span className="text-white font-bold flex items-center gap-2">
                 Get Started <ArrowRight className="h-4 w-4" />
               </span>
-            </div>
+            </Link>
           </div>
         </div>
       </section>

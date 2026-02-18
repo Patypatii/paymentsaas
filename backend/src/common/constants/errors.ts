@@ -4,6 +4,7 @@ export enum ErrorCode {
   INVALID_API_KEY = 'INVALID_API_KEY',
   INVALID_SIGNATURE = 'INVALID_SIGNATURE',
   EXPIRED_TIMESTAMP = 'EXPIRED_TIMESTAMP',
+  INVALID_TOKEN = 'INVALID_TOKEN',
 
   // Merchant errors
   MERCHANT_NOT_FOUND = 'MERCHANT_NOT_FOUND',
@@ -13,6 +14,7 @@ export enum ErrorCode {
   // Payment errors
   INVALID_PAYMENT_REQUEST = 'INVALID_PAYMENT_REQUEST',
   PAYMENT_FAILED = 'PAYMENT_FAILED',
+  PAYMENT_REQUIRED = 'PAYMENT_REQUIRED',
   QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
   DARAJA_ERROR = 'DARAJA_ERROR',
 
@@ -56,6 +58,7 @@ export const errorMessages: Record<ErrorCode, string> = {
   [ErrorCode.PAYMENT_FAILED]: 'Payment processing failed',
   [ErrorCode.QUOTA_EXCEEDED]: 'Usage quota exceeded',
   [ErrorCode.DARAJA_ERROR]: 'Daraja API error',
+  [ErrorCode.PAYMENT_REQUIRED]: 'Payment required (Insufficient funds)',
   [ErrorCode.WEBHOOK_DELIVERY_FAILED]: 'Webhook delivery failed',
   [ErrorCode.INVALID_WEBHOOK_URL]: 'Invalid webhook URL',
   [ErrorCode.VALIDATION_ERROR]: 'Validation error',
@@ -65,4 +68,5 @@ export const errorMessages: Record<ErrorCode, string> = {
   [ErrorCode.DATABASE_ERROR]: 'Database error',
   [ErrorCode.RATE_LIMIT_EXCEEDED]: 'Rate limit exceeded',
   [ErrorCode.RESOURCE_NOT_FOUND]: 'Requested resource not found',
+  [ErrorCode.INVALID_TOKEN]: 'Invalid or expired reset token',
 };

@@ -1,13 +1,13 @@
-import { pool } from '../../config/database';
 import { logger } from '../../common/utils/logger';
+import mongoose from 'mongoose';
+import { ConsentRecordModel } from './consent.model';
 
 export interface ConsentData {
   merchantId: string;
+  customerPhone: string;
   consentType: string;
-  consentText: string;
-  ipAddress?: string;
-  userAgent?: string;
   metadata?: any;
+  granted?: boolean;
 }
 
 export class ConsentRecords {
@@ -16,19 +16,12 @@ export class ConsentRecords {
    */
   static async recordConsent(data: ConsentData): Promise<void> {
     try {
-      await pool.query(
-        `INSERT INTO consent_records 
-         (merchant_id, consent_type, consent_text, ip_address, user_agent, metadata)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [
-          data.merchantId,
-          data.consentType,
-          data.consentText,
-          data.ipAddress || null,
-          data.userAgent || null,
-          data.metadata ? JSON.stringify(data.metadata) : null,
-        ]
-      );
+      await ConsentRecordModel.create({
+        merchantId: new mongoose.Types.ObjectId(data.merchantId),
+        customerPhone: data.customerPhone,
+        consentType: data.consentType,
+        metadata: data.metadata,
+      });
     } catch (error: any) {
       logger.error('Failed to record consent', {
         error: error.message,
@@ -39,16 +32,14 @@ export class ConsentRecords {
   }
 
   /**
-   * Check if merchant has given consent
+   * Check if customer has granted consent
    */
-  static async hasConsent(merchantId: string, consentType: string): Promise<boolean> {
-    const result = await pool.query(
-      `SELECT COUNT(*) as count
-       FROM consent_records
-       WHERE merchant_id = $1 AND consent_type = $2`,
-      [merchantId, consentType]
-    );
+  static async checkConsent(phone: string, type: string): Promise<boolean> {
+    const record = await ConsentRecordModel.findOne({
+      customerPhone: phone,
+      consentType: type,
+    }).sort({ createdAt: -1 });
 
-    return parseInt(result.rows[0].count, 10) > 0;
+    return record ? record.granted : false;
   }
 }

@@ -48,4 +48,37 @@ export const authController = {
       next(error);
     }
   },
+
+  async forgotPassword(req: Request, res: Response, next: import('express').NextFunction): Promise<void> {
+    try {
+      const { email } = z.object({ email: z.string().email() }).parse(req.body);
+      await AuthService.forgotPassword(email);
+
+      // Always return success to prevent email enumeration
+      res.json({ message: 'If an account exists, a reset email has been sent.' });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return next(new AppError(ErrorCode.VALIDATION_ERROR, 'Invalid email', 400, error.errors));
+      }
+      next(error);
+    }
+  },
+
+  async resetPassword(req: Request, res: Response, next: import('express').NextFunction): Promise<void> {
+    try {
+      const schema = z.object({
+        token: z.string(),
+        password: z.string().min(6)
+      });
+      const { token, password } = schema.parse(req.body);
+
+      await AuthService.resetPassword(token, password);
+      res.json({ message: 'Password has been reset successfully.' });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return next(new AppError(ErrorCode.VALIDATION_ERROR, 'Invalid input', 400, error.errors));
+      }
+      next(error);
+    }
+  },
 };

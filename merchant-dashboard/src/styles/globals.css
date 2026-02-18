@@ -4,21 +4,91 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0B0F1A;
-  --foreground: #F9FAFB;
+@layer base {
+  :root {
+    /* Light Mode Defaults */
+    --background: #F3F4F6;
+    /* Gray-100 */
+    --surface: #FFFFFF;
+    --primary: #2563EB;
+    /* Blue-600 (Darker for light mode) */
+    --primary-hover: #1D4ED8;
+    --text-main: #111827;
+    /* Gray-900 */
+    --text-muted: #4B5563;
+    /* Gray-600 (Darker than before) */
+    --border: #E5E7EB;
+    --card-bg: #FFFFFF;
+    /* Solid white for cards in light mode for better contrast */
+    --card-border: #E5E7EB;
+
+    /* Fluid Typography Scale */
+    --text-xs: clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem);
+    --text-sm: clamp(0.8rem, 0.76rem + 0.2vw, 0.875rem);
+    --text-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
+    --text-lg: clamp(1rem, 0.94rem + 0.3vw, 1.125rem);
+    --text-xl: clamp(1.125rem, 1.06rem + 0.32vw, 1.25rem);
+    --text-2xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    --text-3xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+    --text-4xl: clamp(2rem, 1.7rem + 1.5vw, 2.5rem);
+    --text-5xl: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  }
+
+  [data-theme='dark'] {
+    /* Dark Mode Overrides */
+    --background: #0B0F1A;
+    --surface: #111827;
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --text-main: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --border: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.1);
+  }
 }
 
 body {
-  color: var(--foreground);
+  color: var(--text-main);
   background: var(--background);
   font-family: 'Inter', sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1 {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+}
+
+h4 {
+  font-size: var(--text-xl);
+  font-weight: 600;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card backdrop-blur-md border border-border shadow-md;
+    @apply bg-card backdrop-blur-md border border-card-border shadow-md;
+  }
+
+  .glass-panel {
+    @apply bg-card backdrop-blur-xl border-r border-card-border;
   }
 }

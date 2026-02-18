@@ -27,7 +27,7 @@ export function validateCallbackPayload(payload: any): boolean {
   }
 
   const callback = payload.Body.stkCallback;
-  if (!callback.CheckoutRequestID || !callback.ResultCode) {
+  if (!callback.CheckoutRequestID || callback.ResultCode === undefined || callback.ResultCode === null) {
     return false;
   }
 

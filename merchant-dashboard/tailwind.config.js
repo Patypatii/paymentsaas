@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: ['class', '[data-theme="dark"]'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -7,21 +8,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#0B0F1A',
-        surface: '#111827',
+        background: 'var(--background)',
+        surface: 'var(--surface)',
         primary: {
-          DEFAULT: '#3B82F6',
-          hover: '#2563EB',
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
         },
-        success: '#22C55E',
-        warning: '#F59E0B',
-        error: '#EF4444',
-        border: 'rgba(255,255,255,0.08)',
-        card: 'rgba(255,255,255,0.04)',
+        border: 'var(--border)',
+        card: 'var(--card-bg)',
+        'card-border': 'var(--card-border)',
+
+        // Text colors
+        main: 'var(--text-main)',
+        muted: 'var(--text-muted)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+      },
+      fontSize: {
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        base: 'var(--text-base)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        '2xl': 'var(--text-2xl)',
+        '3xl': 'var(--text-3xl)',
+        '4xl': 'var(--text-4xl)',
+        '5xl': 'var(--text-5xl)',
       },
     },
   },

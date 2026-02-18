@@ -72,7 +72,7 @@ export default function Register() {
       <Head>
         <title>Sign Up - Paylor Merchant</title>
       </Head>
-      <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center p-4 relative overflow-hidden py-12">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden py-12">
         <div className="absolute inset-0 bg-gradient-radial from-purple-900/10 to-transparent opacity-50 pointer-events-none" />
 
         <div className="w-full max-w-2xl glass-card p-8 rounded-2xl relative z-10">
@@ -80,8 +80,8 @@ export default function Register() {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 mb-4">
               <div className="w-4 h-4 rounded-full bg-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Sign up to Paylor</h1>
-            <p className="text-sm text-gray-400 mt-2">Create your merchant account</p>
+            <h1 className="text-2xl font-bold text-main tracking-tight">Sign up to Paylor</h1>
+            <p className="text-sm text-muted mt-2">Create your merchant account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,7 +99,7 @@ export default function Register() {
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                  className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                   placeholder="johndoe"
                   required
                 />
@@ -111,7 +111,7 @@ export default function Register() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                  className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                   placeholder="you@example.com"
                   required
                 />
@@ -124,7 +124,7 @@ export default function Register() {
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                     placeholder="John"
                     required
                   />
@@ -135,7 +135,7 @@ export default function Register() {
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                     placeholder="Doe"
                     required
                   />
@@ -149,7 +149,7 @@ export default function Register() {
                     type="text"
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                     placeholder="eg. 712345678"
                     required
                   />
@@ -163,7 +163,7 @@ export default function Register() {
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                     placeholder="••••••••"
                     required
                   />
@@ -174,7 +174,7 @@ export default function Register() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder-gray-500"
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-gray-500"
                     placeholder="••••••••"
                     required
                   />
@@ -186,7 +186,7 @@ export default function Register() {
                 <select
                   value={formData.referralSource}
                   onChange={(e) => setFormData({ ...formData, referralSource: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-white"
+                  className="w-full px-4 py-2.5 bg-background/50 border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main"
                 >
                   <option value="">Select an option</option>
                   <option value="Facebook">Facebook</option>
@@ -204,9 +204,9 @@ export default function Register() {
                   id="terms"
                   checked={formData.termsAccepted}
                   onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-600 bg-[#0B0F1A]/50 text-primary focus:ring-primary/50"
+                  className="w-4 h-4 rounded border-gray-600 bg-background/50 text-primary focus:ring-primary/50"
                 />
-                <label htmlFor="terms" className="text-sm text-gray-400">
+                <label htmlFor="terms" className="text-sm text-muted">
                   I accept the <Link href="/terms" className="text-primary hover:text-primary-hover">Terms of Service</Link>
                 </label>
               </div>
@@ -215,13 +215,13 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-main rounded-lg font-medium transition-all shadow-lg hover:shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign Up'}
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-gray-400 text-center">
+          <p className="mt-6 text-sm text-muted text-center">
             Already have an account?{' '}
             <Link href="/login" className="text-primary hover:text-primary-hover font-medium transition-colors">
               Login

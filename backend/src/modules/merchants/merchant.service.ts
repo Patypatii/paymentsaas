@@ -1,7 +1,7 @@
 import { MerchantModel, IMerchant } from './merchant.model';
-import { ApiKeyService } from '../api-keys/apiKey.service';
 import { AppError, ErrorCode } from '../../common/constants/errors';
 import { hashPassword } from '../../common/utils/crypto';
+import { EmailService } from '../../common/services/email.service';
 
 export class MerchantService {
   static async register(data: {
@@ -56,12 +56,18 @@ export class MerchantService {
       phoneNumber: data.phoneNumber,
       passwordHash,
       referralSource: data.referralSource,
+      status: 'PENDING' // Default status
     });
     console.log('✅ Merchant created:', merchant.id);
 
+    // Send Welcome Email (Async)
+    EmailService.sendWelcomeEmail(merchant.email, `${merchant.firstName} ${merchant.lastName}`).catch(err => {
+      console.error('Failed to send welcome email:', err);
+    });
+
     return {
       merchant,
-      message: 'Registration successful.',
+      message: 'Registration successful. Please wait for account approval.',
     };
   }
 
@@ -75,12 +81,62 @@ export class MerchantService {
 
   static async updateProfile(
     merchantId: string,
-    updates: Partial<IMerchant>
+    updates: { businessName?: string; notifications?: any }
   ): Promise<IMerchant> {
-    const merchant = await MerchantModel.findByIdAndUpdate(merchantId, updates, { new: true });
+    const merchant = await MerchantModel.findByIdAndUpdate(
+      merchantId,
+      { $set: updates },
+      { new: true }
+    );
+
     if (!merchant) {
-      throw new AppError(ErrorCode.MERCHANT_NOT_FOUND, 'Merchant not found', 404);
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, 'Merchant not found', 404);
     }
+
+    return merchant;
+  }
+
+  /**
+   * Update merchant profile picture
+   */
+  static async updateProfilePicture(merchantId: string, imageUrl: string) {
+    // Validate ImageKit URL
+    if (!imageUrl.startsWith('https://ik.imagekit.io/')) {
+      throw new AppError(ErrorCode.VALIDATION_ERROR, 'Invalid image URL', 400);
+    }
+
+    const merchant = await MerchantModel.findByIdAndUpdate(
+      merchantId,
+      { $set: { profilePicture: imageUrl } },
+      { new: true }
+    );
+
+    if (!merchant) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, 'Merchant not found', 404);
+    }
+
+    return merchant;
+  }
+
+  /**
+   * Update merchant bio
+   */
+  static async updateBio(merchantId: string, bio: string) {
+    // Validate bio length
+    if (bio && bio.length > 500) {
+      throw new AppError(ErrorCode.VALIDATION_ERROR, 'Bio must be 500 characters or less', 400);
+    }
+
+    const merchant = await MerchantModel.findByIdAndUpdate(
+      merchantId,
+      { $set: { bio } },
+      { new: true }
+    );
+
+    if (!merchant) {
+      throw new AppError(ErrorCode.RESOURCE_NOT_FOUND, 'Merchant not found', 404);
+    }
+
     return merchant;
   }
 
@@ -99,6 +155,7 @@ export class MerchantService {
     }
 
     // Generate initial API key
+    const { ApiKeyService } = await import('../api-keys/apiKey.service');
     const { apiKey } = await ApiKeyService.generateKey(merchantId, 'Initial Key');
 
     return {

@@ -112,8 +112,8 @@ export const config: EnvConfig = {
     password: getEnvVar('ADMIN_PASSWORD', 'change-this-password'),
   },
   imagekit: {
-    publicKey: getEnvVar('IMAGEKIT_PUBLIC_KEY', 'public_4BIiXvUAWVr/Xofv+jcstrvng2o='),
-    privateKey: getEnvVar('IMAGEKIT_PRIVATE_KEY', 'private_+w8R1puFH3JuMuaJ4zQOXPlv4ec='),
-    urlEndpoint: getEnvVar('IMAGEKIT_URL_ENDPOINT', 'https://ik.imagekit.io/srv4rp6ya'),
+    publicKey: getEnvVar('IMAGEKIT_PUBLIC_KEY'),
+    privateKey: getEnvVar('IMAGEKIT_PRIVATE_KEY'),
+    urlEndpoint: getEnvVar('IMAGEKIT_URL_ENDPOINT'),
   },
 };

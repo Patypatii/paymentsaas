@@ -44,4 +44,15 @@ export const apiKeyController = {
 
     res.json({ message: 'API key revoked successfully' });
   }),
+
+  deleteKey: asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    if (!req.user || req.user.type !== 'merchant') {
+      throw new AppError(ErrorCode.UNAUTHORIZED, 'Merchant authentication required', 401);
+    }
+
+    const { keyId } = req.params;
+    await ApiKeyService.hardDeleteKey(req.user.userId, keyId);
+
+    res.json({ message: 'API key deleted permanently' });
+  }),
 };

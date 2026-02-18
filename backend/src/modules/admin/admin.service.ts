@@ -2,6 +2,8 @@ import { testConnection } from '../../config/database';
 import { MerchantModel } from '../merchants/merchant.model';
 import { PaymentModel } from '../payments/payment.model';
 import { MerchantService } from '../merchants/merchant.service';
+import { SubscriptionModel } from '../subscriptions/plans.model';
+import { AuditLogModel } from '../compliance/audit.model';
 import { AppError, ErrorCode } from '../../common/constants/errors';
 import { logger } from '../../common/utils/logger';
 
@@ -139,6 +141,9 @@ export class AdminService {
       status: 'COMPLETED'
     });
 
+    // Get active subscriptions
+    const activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'ACTIVE' });
+
     // Get total amount from successful transactions
     const amountAggregation = await PaymentModel.aggregate([
       { $match: { status: 'COMPLETED' } },
@@ -157,7 +162,7 @@ export class AdminService {
         successful: successfulTransactions,
       },
       subscriptions: {
-        active: 0, // No subscription model yet
+        active: activeSubscriptions,
       },
     };
   }
@@ -189,7 +194,7 @@ export class AdminService {
         status: payment.status,
         reference: payment.reference,
         description: payment.description,
-        mpesaReceipt: payment.providerRef,
+        mpesaReceipt: payment.metadata?.mpesaReceipt, // Use metadata for receipt
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,
       })),
@@ -199,43 +204,33 @@ export class AdminService {
 
   /**
    * Get audit logs (security events)
-   * Returns mock data for now since audit log model doesn't exist in Mongoose
    */
   static async getAuditLogs(
     limit: number = 50,
     offset: number = 0
   ): Promise<{ logs: any[]; total: number }> {
-    // Mock audit logs until a proper Mongoose model is created
-    const mockLogs = [
-      {
-        id: '1',
-        userType: 'ADMIN',
-        userId: null,
-        action: 'Failed Login Attempt (Admin)',
-        resourceType: 'AUTH',
-        resourceId: null,
-        details: {},
-        ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0',
-        createdAt: new Date(Date.now() - 2 * 60 * 1000), // 2 mins ago
-      },
-      {
-        id: '2',
-        userType: 'MERCHANT',
-        userId: null,
-        action: 'New Merchant Registration',
-        resourceType: 'MERCHANT',
-        resourceId: null,
-        details: {},
-        ipAddress: '10.0.0.5',
-        userAgent: 'Mozilla/5.0',
-        createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
-      },
-    ];
+    const total = await AuditLogModel.countDocuments();
+
+    const logs = await AuditLogModel.find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(offset)
+      .lean();
 
     return {
-      logs: mockLogs.slice(offset, offset + limit),
-      total: mockLogs.length,
+      logs: logs.map((log: any) => ({
+        id: log._id,
+        userType: log.userType,
+        userId: log.userId,
+        action: log.action,
+        resourceType: log.resourceType,
+        resourceId: log.resourceId,
+        details: log.details,
+        ipAddress: log.ipAddress,
+        userAgent: log.userAgent,
+        createdAt: log.createdAt,
+      })),
+      total,
     };
   }
 

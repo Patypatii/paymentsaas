@@ -18,7 +18,7 @@ export const PLANS: Record<PlanType, Plan> = {
     id: PlanType.STARTER,
     name: 'Starter',
     price: 1000,
-    monthlyTransactionLimit: 1000,
+    monthlyTransactionLimit: -1,
     rateLimitPerMinute: 10,
     features: [
       'STK Push payments',
@@ -31,7 +31,7 @@ export const PLANS: Record<PlanType, Plan> = {
     id: PlanType.GROWTH,
     name: 'Growth',
     price: 5000,
-    monthlyTransactionLimit: 10000,
+    monthlyTransactionLimit: -1,
     rateLimitPerMinute: 50,
     features: [
       'STK Push payments',

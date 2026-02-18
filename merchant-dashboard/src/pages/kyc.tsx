@@ -17,6 +17,8 @@ import {
     Send
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useToast } from '../context/ToastContext';
+
 
 const DOCUMENT_TYPES = [
     { id: 'ID_FRONT', label: 'Government ID (Front)', description: 'National ID, Passport, or Driver\'s License', step: 1 },
@@ -33,7 +35,9 @@ const STEPS = [
 ];
 
 export default function KYC() {
+    const { success, error } = useToast();
     const [currentStep, setCurrentStep] = useState(0);
+
     const [merchant, setMerchant] = useState<any>(null);
     const [documents, setDocuments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -80,16 +84,16 @@ export default function KYC() {
             });
             await fetchDocuments();
             setUploading(null);
-        } catch (error) {
-            console.error('Failed to save document record:', error);
-            alert('Failed to register uploaded document. Please contact support.');
+        } catch (err) {
+            console.error('Failed to save document record:', err);
+            error('Failed to register uploaded document. Please contact support.');
         }
     };
 
     const onUploadError = (err: any) => {
         console.error('Upload error:', err);
         setUploading(null);
-        alert('Upload failed. Please try again.');
+        error('Upload failed. Please try again.');
     };
 
     const handleFinalSubmit = async () => {
@@ -98,10 +102,10 @@ export default function KYC() {
             await api.post('/merchants/kyc/finalize');
             await fetchDocuments();
             setCurrentStep(0);
-            alert('KYC submitted successfully! Our team will review your documents.');
-        } catch (error: any) {
-            console.error('Final submission failed:', error);
-            alert(error.response?.data?.message || 'Failed to submit KYC. Ensure all documents are uploaded.');
+            success('KYC submitted successfully! Our team will review your documents.');
+        } catch (err: any) {
+            console.error('Final submission failed:', err);
+            error(err.response?.data?.message || 'Failed to submit KYC. Ensure all documents are uploaded.');
         } finally {
             setIsSubmitting(false);
         }
@@ -142,7 +146,7 @@ export default function KYC() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
             </div>
         );
@@ -161,14 +165,14 @@ export default function KYC() {
                             <ShieldCheck className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-white">KYC Verification</h1>
-                            <p className="text-gray-400">Complete your verification to enable full transaction capabilities.</p>
+                            <h1 className="text-2xl font-bold text-main">KYC Verification</h1>
+                            <p className="text-muted">Complete your verification to enable full transaction capabilities.</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="relative pb-8">
-                    <div className="absolute top-5 left-0 w-full h-0.5 bg-white/5" />
+                    <div className="absolute top-5 left-0 w-full h-0.5 bg-surface/50" />
                     <div className="relative flex justify-between">
                         {STEPS.map((step) => {
                             const Icon = step.icon;
@@ -178,15 +182,15 @@ export default function KYC() {
                                 <div key={step.id} className="flex flex-col items-center gap-2">
                                     <div className={clsx(
                                         "relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
-                                        isActive ? "bg-primary border-primary text-white scale-110" :
-                                            isCompleted ? "bg-green-500 border-green-500 text-white" :
-                                                "bg-[#0B0F1A] border-white/10 text-gray-500"
+                                        isActive ? "bg-primary border-primary text-main scale-110" :
+                                            isCompleted ? "bg-green-500 border-green-500 text-main" :
+                                                "bg-background border-border text-gray-500"
                                     )}>
                                         {isCompleted ? <CheckCircle className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                                     </div>
                                     <span className={clsx(
                                         "text-xs font-medium transition-colors",
-                                        isActive ? "text-white" : "text-gray-500"
+                                        isActive ? "text-main" : "text-muted"
                                     )}>{step.title}</span>
                                 </div>
                             );
@@ -196,30 +200,30 @@ export default function KYC() {
 
                 <div className="min-h-[400px]">
                     {currentStep === 0 && (
-                        <div className="glass-card p-8 rounded-2xl border border-white/10 space-y-6 text-center">
+                        <div className="glass-card p-8 rounded-2xl border border-border space-y-6 text-center">
                             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                                 <ShieldCheck className="h-8 w-8 text-primary" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-xl font-bold text-white">Ready to verify your business?</h2>
-                                <p className="text-gray-400 max-w-md mx-auto">
+                                <h2 className="text-xl font-bold text-main">Ready to verify your business?</h2>
+                                <p className="text-muted max-w-md mx-auto">
                                     We need to verify your identity and business legitimacy to protect our platform. You'll need:
                                 </p>
                             </div>
                             <ul className="text-left max-w-sm mx-auto space-y-3">
-                                <li className="flex items-center gap-3 text-gray-300">
+                                <li className="flex items-center gap-3 text-main">
                                     <CheckCircle className="h-4 w-4 text-green-500" /> Government issued ID
                                 </li>
-                                <li className="flex items-center gap-3 text-gray-300">
+                                <li className="flex items-center gap-3 text-main">
                                     <CheckCircle className="h-4 w-4 text-green-500" /> Business registration certificate
                                 </li>
-                                <li className="flex items-center gap-3 text-gray-300">
+                                <li className="flex items-center gap-3 text-main">
                                     <CheckCircle className="h-4 w-4 text-green-500" /> Tax registration documents
                                 </li>
                             </ul>
                             <button
                                 onClick={() => setCurrentStep(1)}
-                                className="mt-4 px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold transition-all flex items-center gap-2 mx-auto"
+                                className="mt-4 px-8 py-3 bg-primary hover:bg-primary-dark text-main rounded-xl font-semibold transition-all flex items-center gap-2 mx-auto"
                             >
                                 Start Verification <ChevronRight className="h-4 w-4" />
                             </button>
@@ -239,14 +243,14 @@ export default function KYC() {
                                         const isUploading = uploading === docType.id;
                                         return (
                                             <div key={docType.id} className="flex flex-col space-y-4">
-                                                <div className="glass-card p-6 rounded-xl border border-white/10">
+                                                <div className="glass-card p-6 rounded-xl border border-border">
                                                     <div>
-                                                        <h3 className="text-lg font-semibold text-white">{docType.label}</h3>
-                                                        <p className="text-sm text-gray-500">{docType.description}</p>
+                                                        <h3 className="text-lg font-semibold text-main">{docType.label}</h3>
+                                                        <p className="text-sm text-muted">{docType.description}</p>
                                                     </div>
                                                     <div className="relative group mt-4">
                                                         {statusDoc ? (
-                                                            <div className="relative aspect-video rounded-lg overflow-hidden border border-white/10 bg-black/20">
+                                                            <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-black/20">
                                                                 <img
                                                                     src={statusDoc.fileUrl}
                                                                     alt={docType.label}
@@ -255,7 +259,7 @@ export default function KYC() {
                                                                 <div className="absolute inset-0 flex items-center justify-center">
                                                                     <div className="flex flex-col items-center gap-2">
                                                                         <CheckCircle className="h-8 w-8 text-green-500" />
-                                                                        <span className="text-xs font-medium text-white px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                                                                        <span className="text-xs font-medium text-white px-2 py-1 bg-black/60 rounded backdrop-blur-sm">
                                                                             {statusDoc.status === 'REJECTED' ? 'Rejected' : 'Uploaded'}
                                                                         </span>
                                                                     </div>
@@ -269,14 +273,14 @@ export default function KYC() {
                                                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                                             onChange={() => setUploading(docType.id)}
                                                                         />
-                                                                        <button className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-md transition-colors border border-white/10">
-                                                                            <Upload className="h-4 w-4 text-white" />
+                                                                        <button className="p-1.5 bg-surface/80 hover:bg-surface rounded-lg backdrop-blur-md transition-colors border border-border">
+                                                                            <Upload className="h-4 w-4 text-main" />
                                                                         </button>
                                                                     </div>
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <div className="relative border-2 border-dashed border-white/10 rounded-xl p-8 transition-colors hover:border-primary/50">
+                                                            <div className="relative border-2 border-dashed border-border rounded-xl p-8 transition-colors hover:border-primary/50 bg-surface/30">
                                                                 {isUploading ? (
                                                                     <div className="flex flex-col items-center gap-2">
                                                                         <Clock className="h-8 w-8 text-primary animate-spin" />
@@ -293,8 +297,8 @@ export default function KYC() {
                                                                             onChange={() => setUploading(docType.id)}
                                                                         />
                                                                         <div className="flex flex-col items-center gap-2 font-semibold">
-                                                                            <Upload className="h-8 w-8 text-gray-500" />
-                                                                            <span className="text-sm text-gray-400">Upload {docType.label}</span>
+                                                                            <Upload className="h-8 w-8 text-muted" />
+                                                                            <span className="text-sm text-muted">Upload {docType.label}</span>
                                                                         </div>
                                                                     </>
                                                                 )}
@@ -318,7 +322,7 @@ export default function KYC() {
                             <div className="flex justify-between items-center pt-4">
                                 <button
                                     onClick={() => setCurrentStep(currentStep - 1)}
-                                    className="px-6 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                    className="px-6 py-2 text-muted hover:text-main transition-colors flex items-center gap-2"
                                 >
                                     <ChevronLeft className="h-4 w-4" /> Back
                                 </button>
@@ -327,7 +331,7 @@ export default function KYC() {
                                     onClick={() => setCurrentStep(currentStep + 1)}
                                     className={clsx(
                                         "px-8 py-2 rounded-xl font-semibold transition-all flex items-center gap-2",
-                                        canGoToNext() ? "bg-primary text-white" : "bg-white/5 text-gray-600 cursor-not-allowed"
+                                        canGoToNext() ? "bg-primary text-main shadow-lg shadow-primary/20" : "bg-surface/50 text-muted cursor-not-allowed"
                                     )}
                                 >
                                     Continue <ChevronRight className="h-4 w-4" />
@@ -338,17 +342,17 @@ export default function KYC() {
 
                     {currentStep === 3 && (
                         <div className="space-y-6">
-                            <div className="glass-card p-6 rounded-2xl border border-white/10 space-y-6">
-                                <h3 className="text-lg font-semibold text-white border-b border-white/5 pb-4">Submission Summary</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="glass-card p-6 rounded-2xl border border-border space-y-6">
+                                <h3 className="text-lg font-semibold text-main border-b border-white/5 pb-4">Submission Summary</h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     {DOCUMENT_TYPES.map(d => {
                                         const doc = getDocStatus(d.id);
                                         return (
                                             <div key={d.id} className="space-y-2">
-                                                <div className="aspect-square rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+                                                <div className="aspect-square rounded-lg border border-border bg-surface overflow-hidden">
                                                     <img src={doc?.fileUrl} className="w-full h-full object-cover" alt="" />
                                                 </div>
-                                                <p className="text-[10px] text-gray-500 uppercase font-bold text-center truncate">{d.label.split('(')[0]}</p>
+                                                <p className="text-[10px] text-muted uppercase font-bold text-center truncate">{d.label.split('(')[0]}</p>
                                             </div>
                                         );
                                     })}
@@ -363,7 +367,7 @@ export default function KYC() {
                             <div className="flex justify-between items-center pt-4">
                                 <button
                                     onClick={() => setCurrentStep(2)}
-                                    className="px-6 py-2 text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                                    className="px-6 py-2 text-muted hover:text-main transition-colors flex items-center gap-2"
                                 >
                                     <ChevronLeft className="h-4 w-4" /> Back
                                 </button>
@@ -372,7 +376,7 @@ export default function KYC() {
                                     onClick={handleFinalSubmit}
                                     className={clsx(
                                         "px-10 py-3 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20",
-                                        "bg-primary text-white hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100"
+                                        "bg-primary text-main hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100"
                                     )}
                                 >
                                     {isSubmitting ? "Submitting..." : isVerificationDone ? "Submitted for Review" : "Submit for Verification"}
@@ -412,8 +416,8 @@ export default function KYC() {
                             <Clock className="h-8 w-8 text-yellow-500" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-yellow-100">Verification in Progress</h3>
-                            <p className="text-yellow-500/70 text-sm">
+                            <h3 className="text-lg font-bold text-main">Verification in Progress</h3>
+                            <p className="text-yellow-600 dark:text-yellow-500/70 text-sm">
                                 Your documents are currently being reviewed. You'll receive an email once activated.
                             </p>
                         </div>

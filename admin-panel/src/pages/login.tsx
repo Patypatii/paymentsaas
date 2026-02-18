@@ -36,7 +36,7 @@ export default function Login() {
       <Head>
         <title>Login - Paylor Admin</title>
       </Head>
-      <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
         {/* Warning pattern background */}
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.02]" />
         <div className="absolute inset-0 bg-gradient-radial from-red-900/10 to-transparent opacity-50 pointer-events-none" />
@@ -46,8 +46,8 @@ export default function Login() {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/30 mb-4">
               <ShieldAlert className="w-6 h-6 text-red-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Paylor Admin Portal</h1>
-            <p className="text-sm text-gray-400 mt-2">Restricted Access only</p>
+            <h1 className="text-2xl font-bold text-main tracking-tight">Paylor Admin Portal</h1>
+            <p className="text-sm text-muted mt-2">Restricted Access only</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -59,23 +59,23 @@ export default function Login() {
             )}
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-300">Email address</label>
+              <label className="block text-sm font-medium text-muted">Email address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-all text-white placeholder-gray-500"
+                className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-300">Password</label>
+              <label className="block text-sm font-medium text-muted">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#0B0F1A]/50 border border-white/10 rounded-lg focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-all text-white placeholder-gray-500"
+                className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
                 required
               />
             </div>

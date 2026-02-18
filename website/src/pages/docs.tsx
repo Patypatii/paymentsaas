@@ -1,10 +1,14 @@
 import Layout from '../components/layout/Layout';
-import { Book, Code, Lock, Shield, Terminal } from 'lucide-react';
+import { Book, Code, Lock, Shield, Terminal, Zap, Activity, AlertCircle, CheckCircle2, Copy, ExternalLink, RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Docs() {
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
   return (
-    <Layout title="Documentation - PaymentAPI" description="Comprehensive guides and API reference for integrating Paylor.">
+    <Layout title="Documentation - Paylor" description="Comprehensive guides and API reference for integrating Paylor.">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
 
@@ -12,66 +16,121 @@ export default function Docs() {
           <aside className="hidden lg:block lg:col-span-3">
             <nav className="sticky top-24 space-y-8 pr-8">
               <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-3">Getting Started</h3>
+                <h3 className="text-sm font-semibold text-main tracking-wider uppercase mb-3">Getting Started</h3>
                 <ul className="space-y-2">
                   <li><Link href="#introduction" className="text-primary hover:text-primary-hover text-sm font-medium block">Introduction</Link></li>
-                  <li><Link href="#authentication" className="text-gray-400 hover:text-white text-sm block transition-colors">Authentication</Link></li>
-                  <li><Link href="#errors" className="text-gray-400 hover:text-white text-sm block transition-colors">Errors</Link></li>
+                  <li><Link href="#authentication" className="text-muted hover:text-main text-sm block transition-colors">Authentication</Link></li>
+                  <li><Link href="#base-urls" className="text-muted hover:text-main text-sm block transition-colors">Base URLs</Link></li>
                 </ul>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-3">Payments</h3>
+                <h3 className="text-sm font-semibold text-main tracking-wider uppercase mb-3">Payments API</h3>
                 <ul className="space-y-2">
-                  <li><Link href="#stk-push" className="text-gray-400 hover:text-white text-sm block transition-colors">STK Push</Link></li>
-                  <li><Link href="#c2b" className="text-gray-400 hover:text-white text-sm block transition-colors">C2B Register</Link></li>
-                  <li><Link href="#query" className="text-gray-400 hover:text-white text-sm block transition-colors">Query Status</Link></li>
+                  <li><Link href="#stk-push" className="text-muted hover:text-main text-sm block transition-colors">Initiate STK Push</Link></li>
+                  <li><Link href="#query-status" className="text-muted hover:text-main text-sm block transition-colors">Query Transaction</Link></li>
                 </ul>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-3">Webhooks</h3>
+                <h3 className="text-sm font-semibold text-main tracking-wider uppercase mb-3">Webhooks</h3>
                 <ul className="space-y-2">
-                  <li><Link href="#callbacks" className="text-gray-400 hover:text-white text-sm block transition-colors">Handling Callbacks</Link></li>
-                  <li><Link href="#security" className="text-gray-400 hover:text-white text-sm block transition-colors">Security</Link></li>
+                  <li><Link href="#webhooks-overview" className="text-muted hover:text-main text-sm block transition-colors">Overview</Link></li>
+                  <li><Link href="#webhook-payload" className="text-muted hover:text-main text-sm block transition-colors">Payload Structure</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-main tracking-wider uppercase mb-3">Resources</h3>
+                <ul className="space-y-2">
+                  <li><Link href="#error-codes" className="text-muted hover:text-main text-sm block transition-colors">Error Codes</Link></li>
+                  <li><Link href="#best-practices" className="text-muted hover:text-main text-sm block transition-colors">Best Practices</Link></li>
                 </ul>
               </div>
             </nav>
           </aside>
 
           {/* Main Content */}
-          <main className="lg:col-span-9 space-y-12">
+          <main className="lg:col-span-9 space-y-16">
 
             <section id="introduction">
-              <div className="border-b border-white/10 pb-8">
-                <h1 className="text-4xl font-bold text-white mb-6">API Documentation</h1>
-                <p className="text-xl text-gray-400 leading-relaxed">
-                  Welcome to the Paylor API. This documentation will help you integrate M-Pesa payments into your application quickly and securely.
-                </p>
-                <div className="mt-8 flex gap-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                    <Terminal className="h-4 w-4" />
-                    <span>Base URL:</span>
-                    <code className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded">https://api.yourplatform.com/v1</code>
-                  </div>
+              <div className="border-b border-border pb-8">
+                <div className="flex items-center gap-2 text-primary mb-4">
+                  <Zap className="h-5 w-5" />
+                  <span className="text-sm font-bold uppercase tracking-widest">Developer First</span>
                 </div>
+                <h1 className="text-4xl font-extrabold text-main mb-6">API Documentation</h1>
+                <p className="text-xl text-muted leading-relaxed max-w-3xl">
+                  Paylor provides a robust, secure, and developer-friendly API for processing M-Pesa payments. Our platform abstracts the complexity of direct integration, allowing you to go live in minutes.
+                </p>
               </div>
             </section>
 
             <section id="authentication" className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400"><Lock className="h-6 w-6" /></div>
-                <h2 className="text-2xl font-bold text-white">Authentication</h2>
+                <div className="p-2 rounded-lg bg-primary/10 text-primary"><Lock className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Authentication</h2>
               </div>
-              <p className="text-gray-400 mb-6">
-                We use API keys to authenticate requests. You can view and manage your API keys in the Merchant Dashboard.
-                Your API keys carry many privileges, so be sure to keep them secure!
+              <p className="text-muted mb-8 leading-relaxed">
+                The Paylor API uses high-security Bearer tokens (API Keys) for authentication. Requests are made using HTTPS to ensure data privacy. Refer to the table below for the required integration credentials found in your dashboard.
               </p>
 
-              <div className="bg-[#0B0F1A] rounded-xl border border-white/10 overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5">
-                  <span className="text-xs text-gray-500 font-mono">HEADER</span>
+              <div className="overflow-hidden rounded-xl border border-border bg-surface mb-8">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-background/50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider">Field Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider">Usage</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider">Example</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border bg-transparent">
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-main">API Username</td>
+                      <td className="px-6 py-4 text-sm text-muted">Your unique account identifier.</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-primary">bingwa_tech</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-main">API Password</td>
+                      <td className="px-6 py-4 text-sm text-muted">Your Merchant ID.</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-primary">697281a7...</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-main">Auth Token</td>
+                      <td className="px-6 py-4 text-sm text-muted">Your active Secret Key (Bearer).</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-primary">pk_live_...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <span className="text-xs text-muted font-mono uppercase">Request Header</span>
                 </div>
-                <div className="p-6 font-mono text-sm">
-                  <div>Authorization: Bearer <span className="text-yellow-300">sk_live_...</span></div>
+                <div className="p-6 font-mono text-sm text-main">
+                  <div className="text-muted italic mb-2">// Set this header for every request</div>
+                  <div>Authorization: Bearer <span className="text-primary font-bold">YOUR_API_KEY</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="base-urls" className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400"><Activity className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Base URLs</h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="p-6 rounded-xl border border-border bg-surface">
+                  <h3 className="text-lg font-bold text-main mb-2">Live Environment</h3>
+                  <p className="text-sm text-muted mb-4">Use this URL for production transactions.</p>
+                  <code className="block w-full bg-background p-3 rounded-lg border border-border text-primary font-mono text-sm select-all">
+                    https://api.paylor.com/v1
+                  </code>
+                </div>
+                <div className="p-6 rounded-xl border border-border bg-surface opacity-60">
+                  <h3 className="text-lg font-bold text-main mb-2">Sandbox Environment</h3>
+                  <p className="text-sm text-muted mb-4">Coming soon for testing purposes.</p>
+                  <code className="block w-full bg-background p-3 rounded-lg border border-border text-muted font-mono text-sm">
+                    https://sandbox.paylor.com/v1
+                  </code>
                 </div>
               </div>
             </section>
@@ -79,57 +138,147 @@ export default function Docs() {
             <section id="stk-push" className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400"><Code className="h-6 w-6" /></div>
-                <h2 className="text-2xl font-bold text-white">Initiate STK Push</h2>
+                <h2 className="text-2xl font-bold text-main">Initiate STK Push</h2>
               </div>
-              <p className="text-gray-400 mb-6">
-                To initiate an M-Pesa STK Push prompt on a customer's phone, send a POST request to the <code className="text-primary bg-primary/10 px-1 py-0.5 rounded">/payments/stk-push</code> endpoint.
+              <p className="text-muted mb-8 leading-relaxed">
+                The STK Push (Lipa na M-Pesa Online) allows you to trigger a payment request directly to a customer's phone. The customer will be prompted to enter their M-Pesa PIN to authorize the transaction.
               </p>
 
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Request Parameters</h3>
-                  <ul className="space-y-4">
-                    <li className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-bold text-white bg-white/10 px-2 py-0.5 rounded">phone</code>
-                        <span className="text-xs text-red-400">required</span>
-                        <span className="text-xs text-gray-500">string</span>
-                      </div>
-                      <p className="text-sm text-gray-400">The customer phone number in international format (e.g. 2547...)</p>
-                    </li>
-                    <li className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-bold text-white bg-white/10 px-2 py-0.5 rounded">amount</code>
-                        <span className="text-xs text-red-400">required</span>
-                        <span className="text-xs text-gray-500">number</span>
-                      </div>
-                      <p className="text-sm text-gray-400">The amount to charge.</p>
-                    </li>
-                    <li className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <code className="text-sm font-bold text-white bg-white/10 px-2 py-0.5 rounded">reference</code>
-                        <span className="text-xs text-red-400">required</span>
-                        <span className="text-xs text-gray-500">string</span>
-                      </div>
-                      <p className="text-sm text-gray-400">Your unique reference for this transaction.</p>
-                    </li>
-                  </ul>
+              <div className="grid lg:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-sm font-bold text-main uppercase tracking-widest mb-4">Request Body</h3>
+                    <ul className="space-y-6">
+                      <li className="flex gap-4">
+                        <div className="flex-shrink-0 w-1 bg-primary/20 rounded-full" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-sm font-bold text-primary">phone</code>
+                            <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase">Required</span>
+                          </div>
+                          <p className="text-sm text-muted">Customer phone number in international format (e.g., 254712345678).</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-4">
+                        <div className="flex-shrink-0 w-1 bg-primary/20 rounded-full" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-sm font-bold text-primary">amount</code>
+                            <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase">Required</span>
+                          </div>
+                          <p className="text-sm text-muted">Amount to charge in KES. Minimum is 1.</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-4">
+                        <div className="flex-shrink-0 w-1 bg-primary/20 rounded-full" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-sm font-bold text-primary">channelId</code>
+                            <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase">Required</span>
+                          </div>
+                          <p className="text-sm text-muted">The unique ID (alias) of your payment channel (Found in your API Settings).</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-4">
+                        <div className="flex-shrink-0 w-1 bg-primary/20 rounded-full" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <code className="text-sm font-bold text-primary">reference</code>
+                            <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase">Required</span>
+                          </div>
+                          <p className="text-sm text-muted">A unique internal reference used for tracking top-ups or specific orders.</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
 
-                <div className="bg-[#0B0F1A] rounded-xl border border-white/10 overflow-hidden h-fit">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/5">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">POST</span>
-                    <span className="text-xs text-gray-500 font-mono">/payments/stk-push</span>
-                  </div>
-                  <div className="p-6 font-mono text-sm text-gray-300">
-                    <pre>{`{
+                <div className="space-y-6">
+                  <div className="bg-background rounded-xl border border-border overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">POST</span>
+                        <span className="text-xs text-muted font-mono">/payments/stk-push</span>
+                      </div>
+                    </div>
+                    <div className="p-6 font-mono text-sm leading-relaxed">
+                      <pre className="text-main">{`{
   "phone": "254712345678",
   "amount": 1000,
-  "reference": "INV-123456",
-  "description": "Payment for Shoes"
+  "reference": "TOPUP-47219",
+  "channelId": "PAYL-XJ7K2P",
+  "description": "Internal Wallet Credit"
 }`}</pre>
+                    </div>
+                  </div>
+
+                  <div className="bg-background rounded-xl border border-border overflow-hidden">
+                    <div className="flex items-center px-4 py-3 border-b border-border bg-surface">
+                      <span className="text-xs text-muted font-mono uppercase">Success Response (201)</span>
+                    </div>
+                    <div className="p-6 font-mono text-sm leading-relaxed">
+                      <pre className="text-green-400">{`{
+  "transactionId": "TR_A98F2...",
+  "status": "SENT",
+  "message": "STK Push sent successfully"
+}`}</pre>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <section id="query-status" className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400"><RefreshCcw className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Query Transaction</h2>
+              </div>
+              <p className="text-muted mb-8 leading-relaxed">
+                Check the status of a transaction at any time using our query endpoint. This is particularly useful for verifying payments if you miss a webhook callback.
+              </p>
+
+              <div className="bg-background rounded-xl border border-border overflow-hidden max-w-2xl">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">GET</span>
+                    <span className="text-xs text-muted font-mono">/payments/transactions/:id</span>
+                  </div>
+                </div>
+                <div className="p-6 font-mono text-sm text-main">
+                  <div>GET https://api.paylor.com/v1/payments/transactions/<span className="text-primary font-bold">TR_A98F2...</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="error-codes" className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-red-500/10 text-red-400"><AlertCircle className="h-6 w-6" /></div>
+                <h2 className="text-2xl font-bold text-main">Error Codes</h2>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-border bg-surface">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-background/50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider">Code</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border bg-transparent">
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-main">401 UNAUTHORIZED</td>
+                      <td className="px-6 py-4 text-sm text-muted">Invalid Auth Token or Credentials.</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-main">402 PAYMENT_REQUIRED</td>
+                      <td className="px-6 py-4 text-sm text-muted">Insufficient wallet balance to process the fee.</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-main">404 NOT_FOUND</td>
+                      <td className="px-6 py-4 text-sm text-muted">The requested transaction or channel ID does not exist.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 

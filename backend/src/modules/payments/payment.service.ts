@@ -8,8 +8,7 @@ import { ChannelModel } from '../channels/channel.model';
 import { generateIdempotencyKey, checkIdempotency, storeIdempotency } from '../../common/utils/idempotency';
 import { logger } from '../../common/utils/logger';
 import { UsageTracker } from '../subscriptions/usage.tracker';
-import { BillingService } from '../subscriptions/billing.service';
-import { PLANS } from '../../common/constants/plans';
+
 
 export class PaymentService {
   /**
@@ -27,6 +26,8 @@ export class PaymentService {
     const idempotencyCheck = await checkIdempotency(idempotencyKey);
 
     if (idempotencyCheck.isDuplicate) {
+      console.log(`--- IDEMPOTENCY HIT ---`);
+      console.log(`Request matches a previous attempt within the last 24h. Returning cached response: ${JSON.stringify(idempotencyCheck.cachedResponse)}`);
       return idempotencyCheck.cachedResponse;
     }
 
@@ -67,24 +68,33 @@ export class PaymentService {
     let channel: any = null;
 
     if (request.channelId) {
-      channel = await ChannelModel.findOne({
-        _id: request.channelId,
-        merchantId,
-        status: 'ACTIVE'
-      });
+      // Find channel by ID or Alias
+      const query = mongoose.Types.ObjectId.isValid(request.channelId)
+        ? { _id: request.channelId, merchantId, status: 'ACTIVE' }
+        : { alias: request.channelId, merchantId, status: 'ACTIVE' };
+
+      channel = await ChannelModel.findOne(query);
 
       if (!channel) {
         throw new AppError(ErrorCode.VALIDATION_ERROR, 'Active payment channel not found', 404);
       }
 
-      shortcode = channel.number;
-
-      // Handle Bank Account Channels
+      // Handle Channels Explicitly
       if (channel.type === 'BANK') {
-        // For Bank Channels, we MUST use the bank account number as AccountReference
-        // This ensures money lands in the correct account.
+        // BANK: uses channel number as paybill, account number as reference
+        shortcode = channel.number;
         request.reference = channel.accountNumber || request.reference;
         request.description = `Settle to ${channel.bankName}`;
+      } else if (channel.type === 'TILL') {
+        // TILL: uses channel number as Till Number (Store Number)
+        shortcode = channel.number;
+        // For Buy Goods, AccountReference isn't primary, but we keep the unique reference
+      } else if (channel.type === 'PAYBILL') {
+        // PAYBILL: uses channel number
+        shortcode = channel.number;
+      } else {
+        // Fallback / Default
+        shortcode = channel.number;
       }
     }
 
@@ -97,20 +107,23 @@ export class PaymentService {
       );
     }
 
-    // Check usage quota
-    const subscription = await BillingService.getSubscription(merchantId);
-    const plan = subscription.plan || PLANS[merchant.planId as keyof typeof PLANS];
-    const quotaCheck = await UsageTracker.checkQuota(merchantId, plan.monthlyTransactionLimit);
+    // Check Wallet Balance (New Logic)
+    const { WalletService } = await import('../wallet/wallet.service');
+    const { allowed, fee, balance } = await WalletService.hasSufficientFunds(merchantId, request.amount);
 
-    if (!quotaCheck.allowed) {
+    if (!allowed) {
       throw new AppError(
-        ErrorCode.QUOTA_EXCEEDED,
-        `Monthly transaction limit exceeded. Used: ${quotaCheck.current}/${quotaCheck.limit}`,
-        429
+        ErrorCode.PAYMENT_REQUIRED,
+        `Insufficient wallet credits. Fee: KES ${fee}, Balance: KES ${balance}. Please top up your wallet.`,
+        402
       );
     }
 
-    // 1. Create Payment Intent (State: INITIATED)
+
+
+    // 1. Create New Payment Record
+    // We always create a new record to maintain accurate history and timestamps.
+    // If you need idempotency, it should be handled at the API level (which we already do).
     const transaction = await PaymentModel.create({
       merchantId,
       amount: request.amount,
@@ -119,17 +132,24 @@ export class PaymentService {
       provider: 'MPESA',
       reference: request.reference,
       customerPhone: request.phone,
-      description: request.description,
+
+      description: request.description || 'Payment',
       channelId: request.channelId ? new mongoose.Types.ObjectId(request.channelId) : undefined,
     });
 
     try {
       // 2. Initiate STK Push (Collection via Platform Master Shortcode)
-      // We always use CustomerPayBillOnline for our master paybill
+      // Determine Transaction Type based on Channel Type
+      // TILL -> CustomerBuyGoodsOnline
+      // PAYBILL / BANK -> CustomerPayBillOnline
+      const transactionType = (channel && channel.type === 'TILL')
+        ? 'CustomerBuyGoodsOnline'
+        : 'CustomerPayBillOnline';
+
       const stkResponse = await STKPushService.initiate(
         request,
         shortcode, // This is the merchant's target shortcode for tracking, but STK service uses master internally
-        'CustomerPayBillOnline'
+        transactionType
       );
 
       // 3. Update to STK_SENT
@@ -146,7 +166,7 @@ export class PaymentService {
       await storeIdempotency(idempotencyKey, response);
 
       // Track usage (async, don't block)
-      UsageTracker.trackTransaction(merchantId, request.amount, subscription.subscription?.id).catch(
+      UsageTracker.trackTransaction(merchantId, request.amount).catch(
         (error) => logger.error('Usage tracking failed', error)
       );
 
@@ -186,12 +206,16 @@ export class PaymentService {
     limit: number = 50,
     offset: number = 0
   ): Promise<{ transactions: any[]; total: number }> {
-    const total = await PaymentModel.countDocuments({ merchantId });
+    const query = {
+      merchantId
+    };
 
-    const transactions = await PaymentModel.find({ merchantId })
+    const total = await PaymentModel.countDocuments(query);
+    const transactions = await PaymentModel.find(query)
       .sort({ createdAt: -1 })
       .skip(offset)
-      .limit(limit);
+      .limit(limit)
+      .populate('channelId');
 
     return {
       transactions: transactions.map(this.mapTransaction),
@@ -206,93 +230,156 @@ export class PaymentService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Get total revenue (successful transactions this month)
-    const revenueStats = await PaymentModel.aggregate([
+    // Get last month's revenue for comparison
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Get Wallet Balance
+    const { WalletService } = await import('../wallet/wallet.service');
+    const { WalletTransactionModel } = await import('../wallet/wallet.model');
+    const wallet = await WalletService.getWallet(merchantId);
+
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    const [statsResult] = await PaymentModel.aggregate([
       {
         $match: {
           merchantId: new mongoose.Types.ObjectId(merchantId),
-          status: 'COMPLETED',
+          reference: { $not: /^TOPUP-/ }, // Exclude wallet topups from revenue
+          createdAt: { $gte: startOfYear > sixMonthsAgo ? sixMonthsAgo : startOfYear }
+        }
+      },
+      {
+        $facet: {
+          "yearly": [
+            { $match: { createdAt: { $gte: startOfYear } } },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, "$amount", 0] } }
+              }
+            }
+          ],
+          "currentMonth": [
+            { $match: { createdAt: { $gte: startOfMonth } } },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, "$amount", 0] } },
+                totalCount: { $sum: 1 },
+                successCount: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, 1, 0] } }
+              }
+            }
+          ],
+          "lastMonth": [
+            { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, "$amount", 0] } }
+              }
+            }
+          ],
+          "history": [
+            { $match: { createdAt: { $gte: sixMonthsAgo } } },
+            {
+              $group: {
+                _id: {
+                  year: { $year: "$createdAt" },
+                  month: { $month: "$createdAt" }
+                },
+                revenue: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, "$amount", 0] } },
+                transactions: { $sum: 1 }
+              }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+          ]
+        }
+      }
+    ]);
+
+    const currentStats = statsResult.currentMonth[0] || { totalRevenue: 0, totalCount: 0, successCount: 0 };
+    const lastMonthStats = statsResult.lastMonth[0] || { totalRevenue: 0 };
+    const yearlyStats = statsResult.yearly[0] || { totalRevenue: 0 };
+
+    const yearlyRevenue = yearlyStats.totalRevenue;
+    const currentMonthRevenue = currentStats.totalRevenue;
+    const totalCount = currentStats.totalCount;
+    const averageTransaction = currentStats.successCount > 0 ? currentMonthRevenue / currentStats.successCount : 0;
+
+    const revenueChange = lastMonthStats.totalRevenue > 0
+      ? ((currentMonthRevenue - lastMonthStats.totalRevenue) / lastMonthStats.totalRevenue) * 100
+      : 0;
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const chartData = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      const historicalEntry = statsResult.history.find((h: any) => h._id.month === m && h._id.year === y);
+
+      chartData.push({
+        name: monthNames[m - 1],
+        amount: historicalEntry?.revenue || 0,
+        transactions: historicalEntry?.transactions || 0
+      });
+    }
+
+    const walletOutboundResult = await WalletTransactionModel.aggregate([
+      {
+        $match: {
+          merchantId: new mongoose.Types.ObjectId(merchantId),
+          type: 'FEE',
           createdAt: { $gte: startOfMonth }
         }
       },
       {
         $group: {
           _id: null,
-          totalAmount: { $sum: '$amount' },
-          count: { $sum: 1 }
+          totalOutbound: { $sum: { $abs: "$amount" } }
         }
       }
     ]);
 
-    // Get total transactions and success rate
-    const totalCount = await PaymentModel.countDocuments({
-      merchantId: new mongoose.Types.ObjectId(merchantId),
-      createdAt: { $gte: startOfMonth }
-    });
-
-    const completedCount = await PaymentModel.countDocuments({
-      merchantId: new mongoose.Types.ObjectId(merchantId),
-      status: 'COMPLETED',
-      createdAt: { $gte: startOfMonth }
-    });
-
-    const totalRevenue = revenueStats[0]?.totalAmount || 0;
-    const successfulTransactions = revenueStats[0]?.count || 0;
-    const successRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-    const averageTransaction = successfulTransactions > 0 ? totalRevenue / successfulTransactions : 0;
-
-    // Get last month's revenue for comparison
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-
-    const lastMonthRevenueStats = await PaymentModel.aggregate([
-      {
-        $match: {
-          merchantId: new mongoose.Types.ObjectId(merchantId),
-          status: 'COMPLETED',
-          createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalAmount: { $sum: '$amount' }
-        }
-      }
-    ]);
-
-    const lastMonthRevenue = lastMonthRevenueStats[0]?.totalAmount || 0;
-    const revenueChange = lastMonthRevenue > 0
-      ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : 0;
+    const inbound = currentMonthRevenue;
+    const outbound = walletOutboundResult[0]?.totalOutbound || 0;
 
     return {
       stats: [
         {
           name: 'Total Revenue',
-          value: `KES ${totalRevenue.toLocaleString()}`,
+          value: `KES ${yearlyRevenue.toLocaleString()}`,
           change: `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}%`,
           changeType: revenueChange >= 0 ? 'increase' : 'decrease'
         },
         {
           name: 'Active Transactions',
           value: totalCount.toString(),
-          change: '+0%', // Placeholder for now
+          change: 'This Month',
           changeType: 'increase'
         },
         {
-          name: 'Success Rate',
-          value: `${successRate.toFixed(1)}%`,
-          change: '+0%',
+          name: 'Wallet Balance',
+          value: `${wallet.currency} ${wallet.balance.toLocaleString()}`,
+          change: 'Available',
           changeType: 'increase'
         },
         {
           name: 'Average Transaction',
           value: `KES ${averageTransaction.toLocaleString()}`,
-          change: '+0%',
+          change: 'Successful',
           changeType: 'increase'
         },
-      ]
+      ],
+      charts: {
+        monthly: chartData,
+        flow: [
+          { name: 'Inbound', value: inbound, color: '#10B981' },
+          { name: 'Outbound', value: outbound, color: '#EF4444' }
+        ]
+      }
     };
   }
 
@@ -314,6 +401,12 @@ export class PaymentService {
       // Add it to schema or metadata?
       // I'll add it to metadata for now or ignore.
       mpesaReceipt: doc.metadata?.mpesaReceipt,
+      channel: doc.channelId ? {
+        name: doc.channelId.alias || doc.channelId.name,
+        number: doc.channelId.number,
+        accountNumber: doc.channelId.accountNumber,
+        type: doc.channelId.type,
+      } : null,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };

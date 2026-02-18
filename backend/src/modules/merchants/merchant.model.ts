@@ -8,6 +8,8 @@ export interface IMerchant extends Document {
   passwordHash: string;
   phoneNumber?: string;
   businessName?: string;
+  profilePicture?: string;  // ImageKit URL
+  bio?: string;              // Business bio/about section
   settlementType?: 'PAYBILL' | 'TILL' | 'BANK_PAYBILL';
   shortcode?: string;
   tillNumber?: string;
@@ -15,6 +17,12 @@ export interface IMerchant extends Document {
   status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
   planId: string;
   referralSource?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  notifications?: {
+    email: boolean;
+    sms: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +35,8 @@ const MerchantSchema: Schema = new Schema({
   passwordHash: { type: String, required: true },
   phoneNumber: { type: String },
   businessName: { type: String },
+  profilePicture: { type: String },  // ImageKit URL for avatar
+  bio: { type: String, maxlength: 500 },  // Business bio, max 500 chars
   settlementType: { type: String, enum: ['PAYBILL', 'TILL', 'BANK_PAYBILL'] },
   shortcode: { type: String },
   tillNumber: { type: String },
@@ -38,6 +48,12 @@ const MerchantSchema: Schema = new Schema({
   },
   planId: { type: String, default: 'STARTER' },
   referralSource: { type: String },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+  notifications: {
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: true }
+  }
 }, {
   timestamps: true,
   toJSON: {

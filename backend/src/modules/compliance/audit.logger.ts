@@ -1,16 +1,7 @@
-import { pool } from '../../config/database';
+import { AuditLogModel, AuditLogData } from './audit.model';
 import { logger } from '../../common/utils/logger';
 
-export interface AuditLogData {
-  userType: 'MERCHANT' | 'ADMIN';
-  userId?: string;
-  action: string;
-  resourceType?: string;
-  resourceId?: string;
-  details?: any;
-  ipAddress?: string;
-  userAgent?: string;
-}
+export { AuditLogData };
 
 export class AuditLogger {
   /**
@@ -18,21 +9,16 @@ export class AuditLogger {
    */
   static async log(data: AuditLogData): Promise<void> {
     try {
-      await pool.query(
-        `INSERT INTO audit_logs 
-         (user_type, user_id, action, resource_type, resource_id, details, ip_address, user_agent)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          data.userType,
-          data.userId || null,
-          data.action,
-          data.resourceType || null,
-          data.resourceId || null,
-          data.details ? JSON.stringify(data.details) : null,
-          data.ipAddress || null,
-          data.userAgent || null,
-        ]
-      );
+      await AuditLogModel.create({
+        userType: data.userType,
+        userId: data.userId,
+        action: data.action,
+        resourceType: data.resourceType,
+        resourceId: data.resourceId,
+        details: data.details,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+      });
     } catch (error: any) {
       // Don't throw - audit logging shouldn't break the application
       logger.error('Failed to log audit event', {
@@ -53,39 +39,21 @@ export class AuditLogger {
     limit?: number;
     offset?: number;
   }): Promise<any[]> {
-    const conditions: string[] = [];
-    const params: any[] = [];
-    let paramCount = 1;
+    const query: any = {};
 
-    if (filters.userType) {
-      conditions.push(`user_type = $${paramCount++}`);
-      params.push(filters.userType);
-    }
-    if (filters.userId) {
-      conditions.push(`user_id = $${paramCount++}`);
-      params.push(filters.userId);
-    }
-    if (filters.action) {
-      conditions.push(`action = $${paramCount++}`);
-      params.push(filters.action);
-    }
-    if (filters.resourceType) {
-      conditions.push(`resource_type = $${paramCount++}`);
-      params.push(filters.resourceType);
-    }
+    if (filters.userType) query.userType = filters.userType;
+    if (filters.userId) query.userId = filters.userId;
+    if (filters.action) query.action = filters.action;
+    if (filters.resourceType) query.resourceType = filters.resourceType;
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = filters.limit || 100;
     const offset = filters.offset || 0;
 
-    const result = await pool.query(
-      `SELECT * FROM audit_logs 
-       ${whereClause}
-       ORDER BY created_at DESC 
-       LIMIT $${paramCount++} OFFSET $${paramCount++}`,
-      [...params, limit, offset]
-    );
+    const logs = await AuditLogModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
 
-    return result.rows;
+    return logs;
   }
 }

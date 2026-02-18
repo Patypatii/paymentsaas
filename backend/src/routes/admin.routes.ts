@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adminController } from '../modules/admin/admin.controller';
 import { adminGuard } from '../modules/admin/admin.guard';
+import { systemSettingsController } from '../modules/system-settings/system-settings.controller';
 
 export const adminRoutes = Router();
 
@@ -33,3 +34,7 @@ adminRoutes.get('/kyc/merchants/:merchantId', adminController.getMerchantKYCDeta
 adminRoutes.get('/kyc/:kycId', adminController.getKYCSubmission);
 adminRoutes.post('/kyc/:kycId/approve', adminController.approveKYCDocument);
 adminRoutes.post('/kyc/:kycId/reject', adminController.rejectKYCDocument);
+
+// System Settings
+adminRoutes.get('/settings/channel', systemSettingsController.getPlatformChannel);
+adminRoutes.post('/settings/channel', systemSettingsController.updatePlatformChannel);

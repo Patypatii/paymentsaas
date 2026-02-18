@@ -1,34 +1,103 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
-:root {
-  --background: #0B0F1A;
-  --foreground: #F9FAFB;
+@layer base {
+  :root {
+    /* Light Mode Defaults */
+    --background: #FFFFFF;
+    --surface: #F9FAFB;
+    --primary: #2563EB;
+    /* Blue-600 */
+    --primary-hover: #1D4ED8;
+    --text-main: #111827;
+    /* Gray-900 */
+    --text-muted: #6B7280;
+    /* Gray-500 */
+    --border: #E5E7EB;
+    --card-bg: #FFFFFF;
+    --card-border: #E5E7EB;
+  }
+
+  [data-theme='dark'] {
+    /* Dark Mode */
+    --background: #0B0F1A;
+    --surface: rgba(255, 255, 255, 0.04);
+    --primary: #3B82F6;
+    --primary-hover: #60A5FA;
+    --text-main: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --border: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.1);
+  }
 }
 
 body {
-  color: var(--foreground);
+  color: var(--text-main);
   background: var(--background);
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card backdrop-blur-md border border-border shadow-md;
-  }
-  
-  .glass-panel {
-    background: rgba(17, 24, 39, 0.7);
+    background: var(--card-bg);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Using CSS var logic or direct rbga */
+    border: 1px solid var(--card-border);
+    transition: background-color 300ms ease, border-color 300ms ease;
+  }
+
+  .glass-panel {
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    transition: background-color 300ms ease, border-color 300ms ease;
   }
 
   .text-balance {
-      text-wrap: balance;
+    text-wrap: balance;
+  }
+
+  .bg-background {
+    background-color: var(--background);
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .bg-primary-hover {
+    background-color: var(--primary-hover);
+  }
+
+  .text-main {
+    color: var(--text-main);
+  }
+
+  .text-muted {
+    color: var(--text-muted);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .border-border {
+    border-color: var(--border);
+  }
+
+  .border-primary {
+    border-color: var(--primary);
   }
 }

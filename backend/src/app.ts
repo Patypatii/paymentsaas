@@ -46,6 +46,10 @@ export function createApp(): Express {
   // API routes
   app.use(`/api/${config.apiVersion}`, router);
 
+  // Daraja Callback Alias (Matches most ngrok configurations)
+  const { darajaCallbackController } = require('./modules/callbacks/daraja.callback.controller');
+  app.post('/api/mpesa/stk-callback', darajaCallbackController.handleSTKCallback);
+
   // Error handling
   app.use(notFoundHandler);
   app.use(errorHandler);

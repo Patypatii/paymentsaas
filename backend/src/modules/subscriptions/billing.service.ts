@@ -1,5 +1,5 @@
-import { pool } from '../../config/database';
-import { SubscriptionModel, Subscription } from './plans.model';
+import { MerchantModel } from '../merchants/merchant.model';
+import { SubscriptionModel, ISubscription } from './plans.model';
 import { PlanType, PLANS, getPlan } from '../../common/constants/plans';
 import { logger } from '../../common/utils/logger';
 import { AppError, ErrorCode } from '../../common/constants/errors';
@@ -11,16 +11,17 @@ export class BillingService {
   static async createSubscription(
     merchantId: string,
     planId: PlanType
-  ): Promise<Subscription> {
+  ): Promise<ISubscription> {
     const plan = getPlan(planId);
     if (!plan) {
       throw new AppError(ErrorCode.VALIDATION_ERROR, 'Invalid plan', 400);
     }
 
     // Cancel existing subscription
-    const existing = await SubscriptionModel.findByMerchant(merchantId);
+    const existing = await SubscriptionModel.findOne({ merchantId, status: 'ACTIVE' });
     if (existing) {
-      await SubscriptionModel.updateStatus(existing.id, 'CANCELLED');
+      existing.status = 'CANCELLED';
+      await existing.save();
     }
 
     // Create new subscription
@@ -31,15 +32,13 @@ export class BillingService {
     const subscription = await SubscriptionModel.create({
       merchantId,
       planId,
-      periodStart: now,
-      periodEnd,
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+      status: 'ACTIVE'
     });
 
     // Update merchant plan
-    await pool.query(
-      `UPDATE merchants SET plan_id = $1 WHERE id = $2`,
-      [planId, merchantId]
-    );
+    await MerchantModel.findByIdAndUpdate(merchantId, { planId });
 
     logger.info('Subscription created', {
       merchantId,
@@ -54,11 +53,11 @@ export class BillingService {
    * Get merchant subscription
    */
   static async getSubscription(merchantId: string): Promise<{
-    subscription: Subscription | null;
+    subscription: ISubscription | null;
     plan: any;
   }> {
-    const subscription = await SubscriptionModel.findByMerchant(merchantId);
-    
+    const subscription = await SubscriptionModel.findOne({ merchantId, status: 'ACTIVE' });
+
     if (!subscription) {
       // Return default starter plan
       return {
@@ -78,25 +77,23 @@ export class BillingService {
    * Renew subscription (called monthly)
    */
   static async renewSubscription(subscriptionId: string): Promise<void> {
-    const result = await pool.query(
-      'SELECT * FROM subscriptions WHERE id = $1',
-      [subscriptionId]
-    );
+    const subscription = await SubscriptionModel.findById(subscriptionId);
 
-    if (result.rows.length === 0) {
+    if (!subscription) {
       return;
     }
 
-    const subscription = result.rows[0];
     const now = new Date();
     const periodEnd = new Date(now);
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    await SubscriptionModel.updatePeriod(subscription.id, now, periodEnd);
-    
+    subscription.currentPeriodStart = now;
+    subscription.currentPeriodEnd = periodEnd;
+    await subscription.save();
+
     logger.info('Subscription renewed', {
       subscriptionId,
-      merchantId: subscription.merchant_id,
+      merchantId: subscription.merchantId,
     });
   }
 
@@ -104,9 +101,10 @@ export class BillingService {
    * Cancel subscription
    */
   static async cancelSubscription(merchantId: string): Promise<void> {
-    const subscription = await SubscriptionModel.findByMerchant(merchantId);
+    const subscription = await SubscriptionModel.findOne({ merchantId, status: 'ACTIVE' });
     if (subscription) {
-      await SubscriptionModel.updateStatus(subscription.id, 'CANCELLED');
+      subscription.status = 'CANCELLED';
+      await subscription.save();
       logger.info('Subscription cancelled', { merchantId, subscriptionId: subscription.id });
     }
   }
