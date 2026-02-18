@@ -14,9 +14,11 @@ adminRoutes.get('/stats', adminController.getSystemStats);
 // Merchant management
 adminRoutes.get('/merchants', adminController.listMerchants);
 adminRoutes.get('/merchants/:merchantId', adminController.getMerchant);
+adminRoutes.put('/merchants/:merchantId', adminController.updateMerchant);
 adminRoutes.post('/merchants/:merchantId/approve', adminController.approveMerchant);
 adminRoutes.post('/merchants/:merchantId/suspend', adminController.suspendMerchant);
 adminRoutes.post('/merchants/:merchantId/reject', adminController.rejectMerchant);
+adminRoutes.post('/merchants/:merchantId/wallet/adjust', adminController.adjustWalletBalance);
 
 // Transactions
 adminRoutes.get('/transactions', adminController.getAllTransactions);

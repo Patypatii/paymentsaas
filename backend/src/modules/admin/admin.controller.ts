@@ -110,9 +110,40 @@ export const adminController = {
     res.json(result);
   },
 
-  async getMerchantKYCDetail(req: Request, res: Response): Promise<void> {
+  async getMerchantKYCDetail(req: Request, req_res: Response): Promise<void> {
     const { merchantId } = req.params;
     const result = await AdminService.getMerchantKYCDetail(merchantId);
+    req_res.json(result);
+  },
+
+  async updateMerchant(req: Request, res: Response): Promise<void> {
+    const { merchantId } = req.params;
+    const update = req.body;
+    const result = await AdminService.updateMerchant(merchantId, update);
+    res.json(result);
+  },
+
+  async adjustWalletBalance(req: Request, res: Response): Promise<void> {
+    const { merchantId } = req.params;
+    const { amount, description } = req.body;
+    const adminId = req.user?.userId;
+
+    if (!adminId) {
+      res.status(401).json({ error: 'Admin authentication required' });
+      return;
+    }
+
+    if (typeof amount !== 'number') {
+      res.status(400).json({ error: 'Amount must be a number' });
+      return;
+    }
+
+    const result = await AdminService.adjustWalletBalance(
+      merchantId,
+      amount,
+      description,
+      adminId
+    );
     res.json(result);
   },
 };

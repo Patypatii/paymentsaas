@@ -4,6 +4,7 @@ import { PaymentModel } from '../payments/payment.model';
 import { MerchantService } from '../merchants/merchant.service';
 import { SubscriptionModel } from '../subscriptions/plans.model';
 import { AuditLogModel } from '../compliance/audit.model';
+import { WalletModel, WalletTransactionModel } from '../wallet/wallet.model';
 import { AppError, ErrorCode } from '../../common/constants/errors';
 import { logger } from '../../common/utils/logger';
 
@@ -46,10 +47,12 @@ export class AdminService {
    * Get merchant details
    */
   static async getMerchant(merchantId: string): Promise<any> {
-    const merchant = await MerchantModel.findById(merchantId);
+    const merchant = await MerchantModel.findById(merchantId).lean();
     if (!merchant) {
       throw new AppError(ErrorCode.MERCHANT_NOT_FOUND, 'Merchant not found', 404);
     }
+
+    const wallet = await WalletModel.findOne({ merchantId: merchant._id }).lean();
 
     // Get transaction stats using Mongoose aggregation
     const stats = await PaymentModel.aggregate([
@@ -73,7 +76,11 @@ export class AdminService {
     };
 
     return {
-      merchant,
+      merchant: {
+        ...merchant,
+        id: merchant._id,
+        wallet: wallet || { balance: 0, currency: 'KES' }
+      },
       stats: {
         totalTransactions: merchantStats.totalTransactions,
         totalAmount: merchantStats.totalAmount,
@@ -482,6 +489,77 @@ export class AdminService {
         verifiedAt: doc.verifiedAt,
         createdAt: doc.createdAt,
       })),
+    };
+  }
+
+  /**
+   * Update merchant details
+   */
+  static async updateMerchant(merchantId: string, update: any): Promise<any> {
+    const merchant = await MerchantModel.findByIdAndUpdate(
+      merchantId,
+      { $set: update },
+      { new: true }
+    );
+
+    if (!merchant) {
+      throw new AppError(ErrorCode.MERCHANT_NOT_FOUND, 'Merchant not found', 404);
+    }
+
+    logger.info('Merchant details updated by admin', {
+      merchantId,
+      adminAction: true,
+      updatedFields: Object.keys(update),
+    });
+
+    return merchant;
+  }
+
+  /**
+   * Adjust merchant wallet balance
+   */
+  static async adjustWalletBalance(
+    merchantId: string,
+    amount: number,
+    description: string,
+    adminId: string
+  ): Promise<any> {
+    const wallet = await WalletModel.findOne({ merchantId });
+    if (!wallet) {
+      throw new AppError(ErrorCode.VALIDATION_ERROR, 'Merchant wallet not found', 404);
+    }
+
+    const oldBalance = wallet.balance;
+    wallet.balance += amount;
+    await wallet.save();
+
+    // Create transaction record
+    await WalletTransactionModel.create({
+      walletId: wallet._id,
+      merchantId,
+      amount,
+      type: amount >= 0 ? 'BONUS' : 'FEE',
+      description: description || `Admin adjustment: ${amount >= 0 ? 'Credit' : 'Debit'}`,
+      status: 'COMPLETED',
+      metadata: {
+        adminId,
+        oldBalance,
+        newBalance: wallet.balance,
+        adjustmentType: 'ADMIN',
+      },
+    });
+
+    logger.info('Merchant wallet balance adjusted by admin', {
+      merchantId,
+      adminId,
+      amount,
+      newBalance: wallet.balance,
+      adminAction: true,
+    });
+
+    return {
+      balance: wallet.balance,
+      merchantId,
     };
   }
 }

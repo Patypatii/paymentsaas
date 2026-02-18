@@ -32,7 +32,7 @@ export const paymentController = {
     const merchantId = getMerchantId(req);
     const { transactionId } = req.params;
     const transaction = await PaymentService.getTransaction(merchantId, transactionId);
-    res.json({ transaction });
+    res.json(transaction);
   }),
 
   listTransactions: asyncHandler(async (req: Request, res: Response): Promise<void> => {
