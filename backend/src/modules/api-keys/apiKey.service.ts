@@ -36,7 +36,9 @@ export class ApiKeyService {
     merchant: any;
   }> {
     // Extract prefix from the provided key (e.g. "pk_" from "pk_abc123...")
-    const prefixMatch = apiKey.match(/^([a-z_]+)/);
+    // Fixed: Current regex [a-z_]+ was too greedy and matched part of the key.
+    // We want to match the prefix until the first underscore.
+    const prefixMatch = apiKey.match(/^([a-z]+_)/);
     const keyPrefix = prefixMatch ? prefixMatch[1] : null;
 
     // Filter active keys by prefix to avoid bcrypt-comparing every key in the system
