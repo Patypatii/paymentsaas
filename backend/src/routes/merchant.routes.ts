@@ -16,6 +16,18 @@ export const merchantRoutes = Router();
 // Public merchant registration
 merchantRoutes.post('/register', merchantController.register);
 
+// Shared Payment routes (Support both Session JWT and API Key)
+// Fixed: Moved above global jwtGuard so API keys can bypass it
+const paymentRoutes = Router();
+paymentRoutes.use(flexibleAuth);
+paymentRoutes.use(createRateLimiter({ maxRequests: 60 })); // 60 requests per minute
+
+paymentRoutes.post('/stk-push', paymentController.initiateSTKPush);
+paymentRoutes.get('/transactions', paymentController.listTransactions);
+paymentRoutes.get('/transactions/:transactionId', paymentController.getTransaction);
+
+merchantRoutes.use('/payments', paymentRoutes);
+
 // Dashboard-only routes (Require JWT Session)
 merchantRoutes.use(jwtGuard);
 
@@ -30,7 +42,7 @@ merchantRoutes.patch('/profile', merchantController.updateProfile);
 merchantRoutes.patch('/profile/avatar', merchantController.updateProfilePicture);
 merchantRoutes.patch('/profile/bio', merchantController.updateBio);
 merchantRoutes.get('/payments/stats', paymentController.getDashboardStats);
-merchantRoutes.get('/payments/transactions', paymentController.listTransactions);
+// merchantRoutes.get('/payments/transactions', paymentController.listTransactions); // Already in shared paymentRoutes
 
 // API key management
 merchantRoutes.get('/api-keys', apiKeyController.listKeys);
@@ -60,16 +72,5 @@ merchantRoutes.get('/kyc/auth', kycController.getAuthParams);
 merchantRoutes.get('/kyc', kycController.getDocuments);
 merchantRoutes.post('/kyc', kycController.submitDocument);
 merchantRoutes.post('/kyc/finalize', kycController.finalizeKyc);
-
-// Shared Payment routes (Support both Session JWT and API Key)
-const paymentRoutes = Router();
-paymentRoutes.use(flexibleAuth);
-paymentRoutes.use(createRateLimiter({ maxRequests: 60 })); // 60 requests per minute
-
-paymentRoutes.post('/stk-push', paymentController.initiateSTKPush);
-paymentRoutes.get('/transactions', paymentController.listTransactions);
-paymentRoutes.get('/transactions/:transactionId', paymentController.getTransaction);
-
-merchantRoutes.use('/payments', paymentRoutes);
 
 /* cspell:ignore topup */
