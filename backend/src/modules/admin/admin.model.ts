@@ -22,10 +22,11 @@ const AdminSchema: Schema = new Schema({
     timestamps: true,
     toJSON: {
         transform: (_, ret) => {
-            ret.id = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.passwordHash;
+            const result = ret as any;
+            result.id = result._id;
+            delete result._id;
+            delete result.__v;
+            delete result.passwordHash;
         }
     }
 });

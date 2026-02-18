@@ -11,17 +11,17 @@ declare global {
   }
 }
 
-export function jwtGuard(req: Request, res: Response, next: NextFunction): void {
+export function jwtGuard(req: Request, _res: Response, next: NextFunction): void {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AppError(ErrorCode.UNAUTHORIZED, 'Missing or invalid authorization header', 401);
     }
 
     const token = authHeader.substring(7);
     const payload = AuthService.verifyToken(token);
-    
+
     req.user = payload;
     next();
   } catch (error) {
@@ -33,7 +33,7 @@ export function jwtGuard(req: Request, res: Response, next: NextFunction): void 
 }
 
 export function requireRole(...roles: string[]) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       throw new AppError(ErrorCode.UNAUTHORIZED, 'Authentication required', 401);
     }

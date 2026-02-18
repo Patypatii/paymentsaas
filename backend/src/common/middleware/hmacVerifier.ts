@@ -4,7 +4,7 @@ import { config } from '../../config/env';
 import { AppError, ErrorCode } from '../constants/errors';
 import { securityConfig } from '../../config/security';
 
-export function hmacVerifier(req: Request, res: Response, next: NextFunction): void {
+export function hmacVerifier(req: Request, _res: Response, next: NextFunction): void {
   const signature = req.headers['x-signature'] as string;
   const timestamp = req.headers['x-timestamp'] as string;
 

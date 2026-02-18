@@ -1,12 +1,13 @@
-import { AppError, ErrorCode } from '../../common/constants/errors';
 import { logger } from '../../common/utils/logger';
 
 // Safaricom IP ranges (these should be validated in production)
-const SAFARICOM_IPS = [
+/*
+const _SAFARICOM_IPS = [
   '196.201.214.0/24',
   '196.201.215.0/24',
   // Add more IP ranges as needed
 ];
+*/
 
 export function validateCallbackIP(ip: string): boolean {
   // In production, implement proper IP range checking

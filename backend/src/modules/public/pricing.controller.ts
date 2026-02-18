@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PLANS } from '../../common/constants/plans';
 
 export const pricingController = {
-  async getPricing(req: Request, res: Response): Promise<void> {
+  async getPricing(_req: Request, res: Response): Promise<void> {
     try {
       const plans = Object.values(PLANS).map((plan) => ({
         id: plan.id,

@@ -13,22 +13,22 @@ declare global {
 
 export async function apiKeyMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AppError(ErrorCode.UNAUTHORIZED, 'Missing API key', 401);
     }
 
     const apiKey = authHeader.substring(7);
     const validation = await ApiKeyService.validateKey(apiKey);
-    
+
     req.merchantId = validation.merchantId;
     req.merchant = validation.merchant;
-    
+
     next();
   } catch (error) {
     if (error instanceof AppError) {

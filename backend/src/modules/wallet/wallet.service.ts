@@ -1,7 +1,5 @@
 import { WalletModel, WalletTransactionModel, IWallet } from './wallet.model';
 import { PricingService } from './pricing.service';
-import { AppError, ErrorCode } from '../../common/constants/errors';
-import mongoose from 'mongoose';
 
 export class WalletService {
     /**

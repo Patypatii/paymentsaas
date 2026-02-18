@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { AdminService } from './admin.service';
-import { AppError, ErrorCode } from '../../common/constants/errors';
 
 export const adminController = {
   async listMerchants(req: Request, res: Response): Promise<void> {
@@ -38,7 +37,7 @@ export const adminController = {
     res.json({ message: 'Merchant rejected successfully' });
   },
 
-  async getSystemStats(req: Request, res: Response): Promise<void> {
+  async getSystemStats(_req: Request, res: Response): Promise<void> {
     const stats = await AdminService.getSystemStats();
     res.json(stats);
   },
@@ -57,7 +56,7 @@ export const adminController = {
     res.json(result);
   },
 
-  async getSystemHealth(req: Request, res: Response): Promise<void> {
+  async getSystemHealth(_req: Request, res: Response): Promise<void> {
     const health = await AdminService.getSystemHealth();
     res.json(health);
   },

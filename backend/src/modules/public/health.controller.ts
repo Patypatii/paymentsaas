@@ -3,11 +3,11 @@ import { testConnection } from '../../config/database';
 import { getRedisClient } from '../../config/redis';
 
 export const healthController = {
-  async getHealth(req: Request, res: Response): Promise<void> {
+  async getHealth(_req: Request, res: Response): Promise<void> {
     try {
       const dbConnected = await testConnection();
       let redisConnected = false;
-      
+
       try {
         const redis = await getRedisClient();
         redisConnected = redis.isOpen;
