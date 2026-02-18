@@ -8,9 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="font-bold text-xl tracking-tight text-main flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
-                <div className="w-3 h-3 rounded-full bg-primary" />
-              </div>
+              <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg" />
               Paylor
             </Link>
             <p className="text-muted text-sm leading-relaxed max-w-sm mb-6">

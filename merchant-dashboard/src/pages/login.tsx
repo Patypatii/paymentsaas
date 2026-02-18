@@ -44,9 +44,7 @@ export default function Login() {
 
         <div className="w-full max-w-md glass-card p-8 rounded-2xl relative z-10">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 mb-4">
-              <div className="w-4 h-4 rounded-full bg-primary" />
-            </div>
+            <img src="/favicon.svg" alt="Paylor" className="w-12 h-12 rounded-xl mb-4 mx-auto" />
             <h1 className="text-2xl font-bold text-main tracking-tight">Welcome Back!</h1>
             <p className="text-sm text-muted mt-2">Please sign in to your account</p>
           </div>

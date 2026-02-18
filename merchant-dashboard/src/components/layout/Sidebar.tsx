@@ -44,9 +44,7 @@ const Sidebar = () => {
     const MobileHeader = () => (
         <div className="lg:hidden fixed top-0 w-full z-50 flex items-center justify-between px-4 h-16 bg-background border-b border-border glass-panel">
             <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
-                    <div className="w-3 h-3 rounded-full bg-primary" />
-                </div>
+                <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg" />
                 <span className="text-lg font-bold text-main tracking-tight">Paylor</span>
             </div>
             <div className="flex items-center gap-2">
@@ -162,9 +160,7 @@ const Sidebar = () => {
                 <div className="flex-1 flex flex-col min-h-0 bg-background border-r border-border glass-panel transition-colors duration-300">
                     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                         <div className="flex items-center flex-shrink-0 px-4 mb-8">
-                            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 mr-3">
-                                <div className="w-3 h-3 rounded-full bg-primary" />
-                            </div>
+                            <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg mr-3" />
                             <span className="text-xl font-bold text-main tracking-tight transition-colors duration-300">Paylor</span>
                         </div>
 

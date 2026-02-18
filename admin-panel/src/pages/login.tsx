@@ -43,9 +43,7 @@ export default function Login() {
 
         <div className="w-full max-w-md glass-card p-8 rounded-2xl relative z-10 border-red-500/20">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/30 mb-4">
-              <ShieldAlert className="w-6 h-6 text-red-500" />
-            </div>
+            <img src="/favicon.svg" alt="Paylor" className="w-12 h-12 rounded-xl mb-4 mx-auto" />
             <h1 className="text-2xl font-bold text-main tracking-tight">Paylor Admin Portal</h1>
             <p className="text-sm text-muted mt-2">Restricted Access only</p>
           </div>

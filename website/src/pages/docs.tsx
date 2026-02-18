@@ -122,14 +122,14 @@ export default function Docs() {
                   <h3 className="text-lg font-bold text-main mb-2">Live Environment</h3>
                   <p className="text-sm text-muted mb-4">Use this URL for production transactions.</p>
                   <code className="block w-full bg-background p-3 rounded-lg border border-border text-primary font-mono text-sm select-all">
-                    https://api.paylor.com/v1
+                    https://apipaylor.webnixke.com/api/v1
                   </code>
                 </div>
                 <div className="p-6 rounded-xl border border-border bg-surface opacity-60">
                   <h3 className="text-lg font-bold text-main mb-2">Sandbox Environment</h3>
                   <p className="text-sm text-muted mb-4">Coming soon for testing purposes.</p>
                   <code className="block w-full bg-background p-3 rounded-lg border border-border text-muted font-mono text-sm">
-                    https://sandbox.paylor.com/v1
+                    https://apipaylor.webnixke.com/api/v1/sandbox
                   </code>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function Docs() {
                   </div>
                 </div>
                 <div className="p-6 font-mono text-sm text-main">
-                  <div>GET https://api.paylor.com/v1/payments/transactions/<span className="text-primary font-bold">TR_A98F2...</span></div>
+                  <div>GET https://apipaylor.webnixke.com/api/v1/payments/transactions/<span className="text-primary font-bold">TR_A98F2...</span></div>
                 </div>
               </div>
             </section>

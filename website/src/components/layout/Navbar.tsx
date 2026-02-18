@@ -18,9 +18,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex-shrink-0 flex items-center gap-2">
             <Link href="/" className="font-bold text-xl tracking-tight text-white flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
-                <div className="w-3 h-3 rounded-full bg-primary" />
-              </div>
+              <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg" />
               Paylor
             </Link>
           </div>
