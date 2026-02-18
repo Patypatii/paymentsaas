@@ -101,7 +101,6 @@ export default function WalletPage() {
                                     <Plus className="h-6 w-6" />
                                     Deposit Funds
                                 </button>
-                                <span className="text-xs text-green-500 font-bold">✨ 40% Less Fees Applied</span>
                             </div>
                         </div>
                     </div>
@@ -116,7 +115,6 @@ export default function WalletPage() {
                                 Transaction Pricing Schedule
                             </h3>
                             <p className="text-sm text-muted mt-1">Pay-as-you-go fees based on transaction amount.</p>
-                            <p className="text-xs font-bold text-green-500 mt-2">✨ 40% Less Fees Included in the rates below</p>
                         </div>
                     </div>
 

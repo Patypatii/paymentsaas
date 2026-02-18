@@ -164,7 +164,6 @@ export default function Dashboard() {
                             >
                               Deposit
                             </button>
-                            <span className="text-[9px] sm:text-[10px] text-green-500 font-bold whitespace-nowrap">40% Less Fees</span>
                           </div>
                         ) : (
                           <p
