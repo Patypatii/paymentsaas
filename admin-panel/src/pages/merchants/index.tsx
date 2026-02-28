@@ -147,11 +147,24 @@ export default function Merchants() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center gap-3">
+                                                    <Link
+                                                        href={`/merchants/${merchant.id}`}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg text-xs transition-all"
+                                                    >
+                                                        Details
+                                                    </Link>
+                                                    <Link
+                                                        href={`/merchants/${merchant.id}/deposits`}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs transition-all"
+                                                    >
+                                                        Deposits
+                                                    </Link>
+                                                    <div className="h-4 w-[1px] bg-white/10 mx-1" />
                                                     {merchant.status === 'PENDING' && (
                                                         <button
                                                             onClick={() => approveMerchant(merchant.id)}
-                                                            className="inline-flex items-center gap-1 px-3 py-1 bg-green-500 hover:bg-green-600 rounded text-xs text-white transition-colors"
+                                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 rounded-lg text-xs text-white transition-colors"
                                                         >
                                                             <CheckCircle className="h-3 w-3" />
                                                             Approve
@@ -160,18 +173,13 @@ export default function Merchants() {
                                                     {merchant.status === 'ACTIVE' && (
                                                         <button
                                                             onClick={() => suspendMerchant(merchant.id)}
-                                                            className="inline-flex items-center gap-1 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 border border-red-500/50 rounded text-xs transition-colors"
+                                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-xs transition-colors"
                                                         >
                                                             <ShieldAlert className="h-3 w-3" />
                                                             Suspend
                                                         </button>
                                                     )}
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <Link href={`/merchants/${merchant.id}`} className="text-gray-400 hover:text-white transition-colors">
-                                                    <MoreHorizontal className="h-5 w-5" />
-                                                </Link>
                                             </td>
                                         </tr>
                                     ))

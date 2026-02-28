@@ -146,4 +146,21 @@ export const adminController = {
     );
     res.json(result);
   },
+
+  async getMerchantDeposits(req: Request, res: Response): Promise<void> {
+    const { merchantId } = req.params;
+    const limit = parseInt(req.query.limit as string, 10) || 50;
+    const offset = parseInt(req.query.offset as string, 10) || 0;
+
+    const result = await AdminService.getMerchantDeposits(merchantId, limit, offset);
+    res.json(result);
+  },
+
+  async getGlobalDeposits(req: Request, res: Response): Promise<void> {
+    const limit = parseInt(req.query.limit as string, 10) || 50;
+    const offset = parseInt(req.query.offset as string, 10) || 0;
+
+    const result = await AdminService.getGlobalDeposits(limit, offset);
+    res.json(result);
+  },
 };

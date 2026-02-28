@@ -86,12 +86,11 @@ export class CallbackProcessor {
 
         if (pendingTopup && status === 'COMPLETED' && transaction.amount >= pendingTopup.amount) {
           console.log(`Crediting Wallet for Merchant: ${transaction.merchantId}`);
-          // Credit the wallet
-          await WalletService.creditWallet(
+          // Use updateBalance instead of creditWallet to avoid duplicate transaction records
+          // since we are about to update the pendingTopup record ourselves.
+          await WalletService.updateBalance(
             transaction.merchantId.toString(),
-            transaction.amount,
-            transaction.reference,
-            `Top Up via ${mpesaReceipt}`
+            transaction.amount
           );
 
           // Mark pending transaction as completed (or delete it since creditWallet creates a new one? No, update it)

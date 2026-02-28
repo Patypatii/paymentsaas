@@ -21,6 +21,7 @@ import { useState, useEffect } from 'react';
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Merchants', href: '/merchants', icon: Users },
+    { name: 'Service Deposits', href: '/service-deposits', icon: ShieldAlert },
     { name: 'KYC Management', href: '/kyc', icon: FileCheck },
     { name: 'Transactions', href: '/transactions', icon: FileText },
     { name: 'System Health', href: '/system-health', icon: Activity },
@@ -73,6 +74,7 @@ const Sidebar = () => {
         ];
 
         const moreItems = [
+            { name: 'Deposits', href: '/service-deposits', icon: ShieldAlert },
             { name: 'Transactions', href: '/transactions', icon: FileText },
             { name: 'Settings', href: '/settings', icon: Settings },
         ];

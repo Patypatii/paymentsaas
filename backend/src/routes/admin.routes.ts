@@ -19,6 +19,8 @@ adminRoutes.post('/merchants/:merchantId/approve', adminController.approveMercha
 adminRoutes.post('/merchants/:merchantId/suspend', adminController.suspendMerchant);
 adminRoutes.post('/merchants/:merchantId/reject', adminController.rejectMerchant);
 adminRoutes.post('/merchants/:merchantId/wallet/adjust', adminController.adjustWalletBalance);
+adminRoutes.get('/merchants/:merchantId/deposits', adminController.getMerchantDeposits);
+adminRoutes.get('/deposits', adminController.getGlobalDeposits);
 
 // Transactions
 adminRoutes.get('/transactions', adminController.getAllTransactions);

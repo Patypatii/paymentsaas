@@ -58,7 +58,7 @@ export default function Dashboard() {
     { name: 'Total Merchants', value: stats?.merchants?.total || 0, icon: Users, color: 'text-primary' },
     { name: 'Active Merchants', value: stats?.merchants?.active || 0, icon: Activity, color: 'text-green-500' },
     { name: 'Total Volume', value: `KES ${stats?.transactions?.totalAmount?.toLocaleString() || 0}`, icon: AlertTriangle, color: 'text-yellow-500' },
-    { name: 'Active Subscriptions', value: stats?.subscriptions?.active || 0, icon: Server, color: 'text-purple-500' },
+    { name: 'Service Deposits', value: `KES ${stats?.subscriptions?.active?.toLocaleString() || 0}`, icon: Server, color: 'text-purple-500' },
   ];
 
   return (

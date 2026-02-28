@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '../components/layout/AdminLayout';
-import { Search, Filter, Download, ArrowUpDown, MoreHorizontal, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Filter, Download, ArrowUpDown, MoreHorizontal, CheckCircle, XCircle, Clock, X, CreditCard, User, Building2, Calendar, Hash, Info } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function Transactions() {
     const [searchTerm, setSearchTerm] = useState('');
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         loadTransactions();
@@ -35,8 +37,14 @@ export default function Transactions() {
     const filteredTransactions = transactions.filter(t =>
         searchTerm === '' ||
         t.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.merchantName?.toLowerCase().includes(searchTerm.toLowerCase())
+        t.merchantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.reference?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const openModal = (transaction: any) => {
+        setSelectedTransaction(transaction);
+        setIsModalOpen(true);
+    };
 
     if (loading) {
         return (
@@ -78,7 +86,7 @@ export default function Transactions() {
                         <input
                             type="text"
                             className="block w-full rounded-md border-0 bg-white/5 py-1.5 pl-10 pr-3 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6 placeholder-gray-500"
-                            placeholder="Search by ID, merchant..."
+                            placeholder="Search by ID, merchant, reference..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -126,7 +134,10 @@ export default function Transactions() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button className="text-gray-400 hover:text-white transition-colors">
+                                            <button
+                                                onClick={() => openModal(transaction)}
+                                                className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg"
+                                            >
                                                 <MoreHorizontal className="h-5 w-5" />
                                             </button>
                                         </td>
@@ -137,6 +148,88 @@ export default function Transactions() {
                     </div>
                 </div>
             </div>
+
+            {/* Transaction Detail Modal */}
+            {isModalOpen && selectedTransaction && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="glass-card w-full max-w-lg p-6 rounded-2xl border border-white/10 bg-[#111827] shadow-2xl animate-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Info className="h-5 w-5 text-red-500" />
+                                Transaction Details
+                            </h2>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                                <X className="h-5 w-5 text-gray-400" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Amount & Status Banner */}
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Amount</p>
+                                    <p className="text-2xl font-black text-white">{selectedTransaction.currency} {selectedTransaction.amount?.toLocaleString()}</p>
+                                </div>
+                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset ${getStatusColor(selectedTransaction.status)}`}>
+                                    {selectedTransaction.status}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <User className="h-3 w-3" /> Customer Phone
+                                    </label>
+                                    <p className="text-sm font-medium text-white">{selectedTransaction.phone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <Building2 className="h-3 w-3" /> Merchant
+                                    </label>
+                                    <p className="text-sm font-medium text-white">{selectedTransaction.merchantName}</p>
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <Hash className="h-3 w-3" /> Receipt / Ref
+                                    </label>
+                                    <p className="text-sm font-mono text-gray-300">{selectedTransaction.mpesaReceipt || selectedTransaction.reference || '—'}</p>
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        <Calendar className="h-3 w-3" /> Timestamp
+                                    </label>
+                                    <p className="text-sm text-gray-300">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-white/10 pt-4">
+                                <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                    <CreditCard className="h-3 w-3" /> Internal Transaction ID
+                                </label>
+                                <p className="text-xs font-mono text-gray-400 break-all bg-black/30 p-2 rounded border border-white/5">{selectedTransaction.id}</p>
+                            </div>
+
+                            {selectedTransaction.description && (
+                                <div className="border-t border-white/10 pt-4">
+                                    <label className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                        Description
+                                    </label>
+                                    <p className="text-sm text-gray-400 italic">"{selectedTransaction.description}"</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-8">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl border border-white/10 transition-colors"
+                            >
+                                Close Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

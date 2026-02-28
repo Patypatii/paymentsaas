@@ -78,15 +78,31 @@ export class WalletService {
     }
 
     /**
+     * Update wallet balance ONLY
+     */
+    static async updateBalance(merchantId: string, amount: number): Promise<IWallet> {
+        const wallet = await this.getWallet(merchantId);
+
+        const updated = await WalletModel.findOneAndUpdate(
+            { _id: wallet.id },
+            { $inc: { balance: amount } },
+            { new: true }
+        );
+
+        if (!updated) {
+            throw new Error('Failed to update wallet balance');
+        }
+
+        return updated;
+    }
+
+    /**
      * Top up wallet (Credit)
      */
     static async creditWallet(merchantId: string, amount: number, reference: string, description: string): Promise<void> {
         const wallet = await this.getWallet(merchantId);
 
-        await WalletModel.updateOne(
-            { _id: wallet.id },
-            { $inc: { balance: amount } }
-        );
+        await this.updateBalance(merchantId, amount);
 
         await WalletTransactionModel.create({
             walletId: wallet.id,

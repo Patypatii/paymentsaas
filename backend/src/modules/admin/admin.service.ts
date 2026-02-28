@@ -3,7 +3,6 @@ import { testConnection } from '../../config/database';
 import { MerchantModel } from '../merchants/merchant.model';
 import { PaymentModel } from '../payments/payment.model';
 import { MerchantService } from '../merchants/merchant.service';
-import { SubscriptionModel } from '../subscriptions/plans.model';
 import { AuditLogModel } from '../compliance/audit.model';
 import { WalletModel, WalletTransactionModel } from '../wallet/wallet.model';
 import { AppError, ErrorCode } from '../../common/constants/errors';
@@ -206,8 +205,12 @@ export class AdminService {
     // Outbound could be considered settlements or fees? Let's use successful payments vs initiated.
     // Or system-wide fees collected.
 
-    // Count active subscriptions
-    const activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'ACTIVE' });
+    // Calculate total service deposits (completed TOPUPs)
+    const [depositsResult] = await WalletTransactionModel.aggregate([
+      { $match: { type: 'TOPUP', status: 'COMPLETED' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const serviceDeposits = depositsResult?.total || 0;
 
     return {
       merchants: {
@@ -220,7 +223,7 @@ export class AdminService {
         successful: totalStats.count,
       },
       subscriptions: {
-        active: activeSubscriptions,
+        active: serviceDeposits, // Redirected to show service deposits as requested
       },
       charts: {
         monthly: chartData,
@@ -618,6 +621,88 @@ export class AdminService {
     return {
       balance: wallet.balance,
       merchantId,
+    };
+  }
+
+  /**
+   * Get all deposits (TOPUPs) for a specific merchant
+   */
+  static async getMerchantDeposits(
+    merchantId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{ deposits: any[]; total: number }> {
+    const filter = {
+      merchantId: new mongoose.Types.ObjectId(merchantId),
+      type: 'TOPUP'
+    };
+
+    const total = await WalletTransactionModel.countDocuments(filter);
+
+    const deposits = await WalletTransactionModel.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(offset)
+      .lean();
+
+    return {
+      deposits: deposits.map((deposit: any) => ({
+        id: deposit._id,
+        amount: deposit.amount,
+        status: deposit.status,
+        reference: deposit.reference,
+        description: deposit.description,
+        createdAt: deposit.createdAt,
+      })),
+      total,
+    };
+  }
+
+  /**
+   * Get all deposits (TOPUPs) across the entire system
+   */
+  static async getGlobalDeposits(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{ deposits: any[]; total: number; stats: { totalAmount: number; count: number } }> {
+    const filter = {
+      type: 'TOPUP'
+    };
+
+    // Count all deposits for pagination
+    const total = await WalletTransactionModel.countDocuments(filter);
+
+    // Get stats for COMPLETED deposits only
+    const statsResult = await WalletTransactionModel.aggregate([
+      { $match: { type: 'TOPUP', status: 'COMPLETED' } },
+      { $group: { _id: null, totalAmount: { $sum: '$amount' }, count: { $sum: 1 } } }
+    ]);
+
+    const stats = statsResult[0] || { totalAmount: 0, count: 0 };
+
+    const deposits = await WalletTransactionModel.find(filter)
+      .populate('merchantId', 'businessName username email')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(offset)
+      .lean();
+
+    return {
+      deposits: deposits.map((deposit: any) => ({
+        id: deposit._id,
+        amount: deposit.amount,
+        status: deposit.status,
+        reference: deposit.reference,
+        description: deposit.description,
+        createdAt: deposit.createdAt,
+        merchantName: deposit.merchantId?.businessName || deposit.merchantId?.username || 'Unknown',
+        merchantId: deposit.merchantId?._id
+      })),
+      total,
+      stats: {
+        totalAmount: stats.totalAmount,
+        count: stats.count
+      }
     };
   }
 }

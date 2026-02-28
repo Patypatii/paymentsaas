@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { ArrowLeft, Ban, CheckCircle, Shield, CreditCard, Activity, Edit, DollarSign, Loader2, X } from 'lucide-react';
 import { api } from '../../services/api';
+import Link from 'next/link';
 
 export default function MerchantDetail() {
     const router = useRouter();
@@ -139,6 +140,13 @@ export default function MerchantDetail() {
                         </div>
                     </div>
                     <div className="flex gap-3">
+                        <Link
+                            href={`/merchants/${id}/deposits`}
+                            className="inline-flex items-center gap-x-2 rounded-md bg-purple-600/10 border border-purple-500/20 px-3.5 py-2.5 text-sm font-semibold text-purple-400 shadow-sm hover:bg-purple-500/20 transition-colors"
+                        >
+                            <Activity className="-ml-0.5 h-5 w-5" />
+                            View Deposits
+                        </Link>
                         <button
                             onClick={() => setIsEditModalOpen(true)}
                             className="inline-flex items-center gap-x-2 rounded-md bg-surface border border-border px-3.5 py-2.5 text-sm font-semibold text-main shadow-sm hover:bg-white/5 transition-colors"
@@ -267,12 +275,12 @@ export default function MerchantDetail() {
                             </h3>
                             <div className="flex items-center gap-4">
                                 <span className="text-xl font-bold text-main">
-                                    {merchant.verifiedAt ? 'Verified' : 'Unverified'}
+                                    {merchant.status === 'ACTIVE' || merchant.verifiedAt ? 'Verified' : 'Unverified'}
                                 </span>
                             </div>
                             <p className="mt-2 text-xs text-muted">
-                                {merchant.verifiedAt
-                                    ? `KYC approved on ${new Date(merchant.verifiedAt).toLocaleDateString()}`
+                                {merchant.status === 'ACTIVE' || merchant.verifiedAt
+                                    ? `KYC approved on ${new Date(merchant.verifiedAt || merchant.createdAt).toLocaleDateString()}`
                                     : 'Awaiting KYC documentation approval.'
                                 }
                             </p>
