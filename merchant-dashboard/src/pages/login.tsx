@@ -64,8 +64,9 @@ export default function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onBlur={() => setUsername(username.trim())}
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
                 placeholder="Enter your username"
+                minLength={3}
                 required
               />
             </div>
@@ -81,8 +82,9 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
                 placeholder="Enter your password"
+                minLength={6}
                 required
               />
             </div>

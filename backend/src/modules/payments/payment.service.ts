@@ -368,7 +368,7 @@ export class PaymentService {
           changeType: 'increase'
         },
         {
-          name: 'Wallet Balance',
+          name: 'Credit Balance',
           value: `${wallet.currency} ${wallet.balance.toLocaleString()}`,
           change: 'Available',
           changeType: 'increase'

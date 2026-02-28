@@ -86,8 +86,9 @@ export default function ResetPassword() {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="block w-full pl-10 pr-10 bg-background/50 border border-border rounded-xl text-main placeholder-gray-500 focus:ring-primary focus:border-primary sm:text-sm py-3 transition-all"
+                                        className="block w-full pl-10 pr-10 bg-surface border border-border rounded-xl text-main placeholder-gray-500 focus:ring-primary focus:border-primary sm:text-sm py-3 transition-all"
                                         placeholder="••••••••"
+                                        minLength={6}
                                     />
                                     <button
                                         type="button"
@@ -112,8 +113,9 @@ export default function ResetPassword() {
                                         required
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="block w-full pl-10 bg-background/50 border border-border rounded-xl text-main placeholder-gray-500 focus:ring-primary focus:border-primary sm:text-sm py-3 transition-all"
+                                        className="block w-full pl-10 bg-surface border border-border rounded-xl text-main placeholder-gray-500 focus:ring-primary focus:border-primary sm:text-sm py-3 transition-all"
                                         placeholder="••••••••"
+                                        minLength={6}
                                     />
                                 </div>
                             </div>

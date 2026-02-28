@@ -70,7 +70,7 @@ export default function Dashboard() {
   const statIcons: Record<string, any> = {
     'Total Revenue': DollarSign,
     'Active Transactions': Activity,
-    'Wallet Balance': Wallet,
+    'Credit Balance': Wallet,
     'Average Transaction': CreditCard,
   };
 
@@ -156,7 +156,7 @@ export default function Dashboard() {
                       <p className="truncate text-xs sm:text-sm font-medium text-muted">{item.name}</p>
                       <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                         <p className="text-xl sm:text-2xl font-semibold text-main">{item.value}</p>
-                        {item.name === 'Wallet Balance' ? (
+                        {item.name === 'Credit Balance' ? (
                           <div className="flex flex-col items-end gap-1">
                             <button
                               onClick={() => setIsTopUpOpen(true)}
