@@ -71,6 +71,23 @@ export class MerchantService {
     };
   }
 
+  static async updateMerchant(merchantId: string, update: any): Promise<any> {
+    // If status is being updated to ACTIVE, set verifiedAt
+    if (update.status === 'ACTIVE' && !update.verifiedAt) {
+      update.verifiedAt = new Date();
+    }
+
+    const merchant = await MerchantModel.findByIdAndUpdate(
+      merchantId,
+      { $set: update },
+      { new: true }
+    );
+    if (!merchant) {
+      throw new AppError(ErrorCode.MERCHANT_NOT_FOUND, 'Merchant not found', 404);
+    }
+    return merchant;
+  }
+
   static async getProfile(merchantId: string): Promise<IMerchant> {
     const merchant = await MerchantModel.findById(merchantId);
     if (!merchant) {
@@ -146,7 +163,7 @@ export class MerchantService {
   }> {
     const merchant = await MerchantModel.findByIdAndUpdate(
       merchantId,
-      { status: 'ACTIVE' },
+      { status: 'ACTIVE', verifiedAt: new Date() },
       { new: true }
     );
 

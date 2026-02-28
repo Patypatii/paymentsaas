@@ -127,7 +127,7 @@ export default function MerchantDetail() {
                         </button>
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-main flex items-center gap-3">
-                                {merchant.businessName}
+                                {merchant.businessName || merchant.username}
                                 <span className={`rounded-full px-2.5 py-0.5 text-sm font-medium ring-1 ring-inset ${merchant.status === 'ACTIVE'
                                     ? 'bg-green-500/10 text-green-600 dark:text-green-400 ring-green-500/20'
                                     : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 ring-yellow-500/20'
@@ -135,7 +135,7 @@ export default function MerchantDetail() {
                                     {merchant.status}
                                 </span>
                             </h1>
-                            <p className="text-sm text-muted">{merchant.email} • ID: {merchant.id}</p>
+                            <p className="text-sm text-muted">{merchant.email} • Username: {merchant.username} • ID: {merchant.id}</p>
                         </div>
                     </div>
                     <div className="flex gap-3">
@@ -153,10 +153,44 @@ export default function MerchantDetail() {
                             <DollarSign className="-ml-0.5 h-5 w-5" />
                             Adjust Balance
                         </button>
-                        <button className="inline-flex items-center gap-x-2 rounded-md bg-red-500/10 px-3.5 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 shadow-sm ring-1 ring-inset ring-red-500/20 hover:bg-red-500/20 transition-colors">
-                            <Ban className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                            Suspend
-                        </button>
+                        {(merchant.status === 'SUSPENDED' || merchant.status === 'PENDING') ? (
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setSubmitting(true);
+                                        await api.post(`/admin/merchants/${id}/approve`);
+                                        await fetchMerchantData();
+                                    } catch (error) {
+                                        console.error('Activation failed:', error);
+                                    } finally {
+                                        setSubmitting(false);
+                                    }
+                                }}
+                                className="inline-flex items-center gap-x-2 rounded-md bg-green-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-600 transition-colors"
+                            >
+                                <CheckCircle className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+                                {submitting ? 'Activating...' : 'Activate Account'}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={async () => {
+                                    if (!confirm('Are you sure you want to suspend this merchant?')) return;
+                                    try {
+                                        setSubmitting(true);
+                                        await api.post(`/admin/merchants/${id}/suspend`, { reason: 'Suspended by Administrator' });
+                                        await fetchMerchantData();
+                                    } catch (error) {
+                                        console.error('Suspension failed:', error);
+                                    } finally {
+                                        setSubmitting(false);
+                                    }
+                                }}
+                                className="inline-flex items-center gap-x-2 rounded-md bg-red-500/10 px-3.5 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 shadow-sm ring-1 ring-inset ring-red-500/20 hover:bg-red-500/20 transition-colors"
+                            >
+                                <Ban className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+                                {submitting ? 'Suspending...' : 'Suspend'}
+                            </button>
+                        )}
                     </div>
                 </div>
 

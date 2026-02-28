@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { testConnection } from '../../config/database';
 import { MerchantModel } from '../merchants/merchant.model';
 import { PaymentModel } from '../payments/payment.model';
@@ -56,7 +57,7 @@ export class AdminService {
 
     // Get transaction stats using Mongoose aggregation
     const stats = await PaymentModel.aggregate([
-      { $match: { merchantId: merchant._id } },
+      { $match: { merchantId: new mongoose.Types.ObjectId(merchantId) } },
       {
         $group: {
           _id: null,
@@ -133,30 +134,80 @@ export class AdminService {
   }
 
   /**
-   * Get system statistics
+   * Get system statistics including historical data for charts
    */
   static async getSystemStats(): Promise<any> {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
     // Count merchants by status using Mongoose
     const [totalMerchants, activeMerchants] = await Promise.all([
       MerchantModel.countDocuments(),
       MerchantModel.countDocuments({ status: 'ACTIVE' }),
     ]);
 
-    // Count transactions and sum amounts using Mongoose
-    const totalTransactions = await PaymentModel.countDocuments();
-    const successfulTransactions = await PaymentModel.countDocuments({
-      status: 'COMPLETED'
-    });
-
-    // Get active subscriptions
-    const activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'ACTIVE' });
-
-    // Get total amount from successful transactions
-    const amountAggregation = await PaymentModel.aggregate([
-      { $match: { status: 'COMPLETED' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
+    // Transaction and Revenue Aggregation
+    const [statsResult] = await PaymentModel.aggregate([
+      {
+        $match: {
+          reference: { $not: /^TOPUP-/ }, // Exclude wallet topups from revenue
+          createdAt: { $gte: startOfYear > sixMonthsAgo ? sixMonthsAgo : startOfYear }
+        }
+      },
+      {
+        $facet: {
+          "total": [
+            { $match: { status: 'COMPLETED' } },
+            { $group: { _id: null, totalAmount: { $sum: '$amount' }, count: { $sum: 1 } } }
+          ],
+          "all_transactions": [
+            { $count: "count" }
+          ],
+          "history": [
+            { $match: { createdAt: { $gte: sixMonthsAgo } } },
+            {
+              $group: {
+                _id: {
+                  year: { $year: "$createdAt" },
+                  month: { $month: "$createdAt" }
+                },
+                revenue: { $sum: { $cond: [{ $eq: ["$status", "COMPLETED"] }, "$amount", 0] } },
+                transactions: { $sum: 1 }
+              }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+          ]
+        }
+      }
     ]);
-    const totalAmount = amountAggregation.length > 0 ? amountAggregation[0].total : 0;
+
+    const totalStats = statsResult.total[0] || { totalAmount: 0, count: 0 };
+    const allTransactionsCount = statsResult.all_transactions[0]?.count || 0;
+
+    // Format chart data for last 6 months
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const chartData = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = d.getMonth() + 1;
+      const y = d.getFullYear();
+      const historicalEntry = statsResult.history.find((h: any) => h._id.month === m && h._id.year === y);
+
+      chartData.push({
+        name: monthNames[m - 1],
+        amount: historicalEntry?.revenue || 0,
+        transactions: historicalEntry?.transactions || 0
+      });
+    }
+
+    // Money Flow Aggregation (Inbound vs Outbound for the system)
+    // In the admin context, inbound is total successful payments.
+    // Outbound could be considered settlements or fees? Let's use successful payments vs initiated.
+    // Or system-wide fees collected.
+
+    // Count active subscriptions
+    const activeSubscriptions = await SubscriptionModel.countDocuments({ status: 'ACTIVE' });
 
     return {
       merchants: {
@@ -164,13 +215,20 @@ export class AdminService {
         active: activeMerchants,
       },
       transactions: {
-        total: totalTransactions,
-        totalAmount: totalAmount,
-        successful: successfulTransactions,
+        total: allTransactionsCount,
+        totalAmount: totalStats.totalAmount,
+        successful: totalStats.count,
       },
       subscriptions: {
         active: activeSubscriptions,
       },
+      charts: {
+        monthly: chartData,
+        flow: [
+          { name: 'Completed', value: totalStats.count, color: '#10B981' },
+          { name: 'Other', value: allTransactionsCount - totalStats.count, color: '#EF4444' }
+        ]
+      }
     };
   }
 
@@ -194,7 +252,7 @@ export class AdminService {
       transactions: payments.map((payment: any) => ({
         id: payment._id || payment.id,
         merchantId: payment.merchantId?._id,
-        merchantName: payment.merchantId?.businessName || 'Unknown',
+        merchantName: payment.merchantId?.businessName || payment.merchantId?.username || payment.merchantId?.email || 'Unknown',
         phone: payment.customerPhone,
         amount: payment.amount,
         currency: payment.currency || 'KES',

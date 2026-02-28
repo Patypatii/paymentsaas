@@ -46,7 +46,7 @@ export default function KYC() {
 
     const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY;
     const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
-    const authenticationEndpoint = `${process.env.API_URL}/merchants/kyc/auth`;
+    const authenticationEndpoint = `${process.env.NEXT_PUBLIC_API_URL || 'https://apipaylor.webnixke.com/api/v1'}/merchants/kyc/auth`;
 
     useEffect(() => {
         const fetchData = async () => {

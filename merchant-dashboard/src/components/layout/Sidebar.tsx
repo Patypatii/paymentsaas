@@ -18,7 +18,8 @@ import {
     Sun,
     Moon,
     Menu,
-    X
+    X,
+    FileText
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -33,6 +34,7 @@ const navigation = [
     { name: 'API Keys', href: '/api-keys', icon: Key },
     { name: 'Verification (KYC)', href: '/kyc', icon: ShieldCheck },
     { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Documentation', href: 'https://paylor.webnixke.com/docs', icon: FileText, external: true },
 ];
 
 const Sidebar = () => {
@@ -102,6 +104,7 @@ const Sidebar = () => {
                                             key={item.name}
                                             href={item.href}
                                             onClick={() => setIsMoreOpen(false)}
+                                            {...('external' in item ? { target: '_blank' } : {})}
                                             className={clsx(
                                                 'flex flex-col items-center justify-center p-3 rounded-xl transition-all',
                                                 isActive ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-surface'
@@ -171,6 +174,7 @@ const Sidebar = () => {
                                     <Link
                                         key={item.name}
                                         href={item.href}
+                                        {...('external' in item ? { target: '_blank' } : {})}
                                         className={clsx(
                                             isActive
                                                 ? 'bg-primary/10 text-primary border-r-2 border-primary'

@@ -4,7 +4,8 @@ import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import { Plus, Copy, Trash2, Key, AlertTriangle } from 'lucide-react';
+import { Plus, Copy, Trash2, Key, AlertTriangle, FileText, Lock, Code, Webhook } from 'lucide-react';
+import clsx from 'clsx';
 
 export default function ApiKeys() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function ApiKeys() {
   const [merchant, setMerchant] = useState<any>(null);
   const [channels, setChannels] = useState<any[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<string>('');
+  const [selectedLang, setSelectedLang] = useState<'nodejs' | 'python' | 'php' | 'curl'>('nodejs');
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -159,6 +161,86 @@ export default function ApiKeys() {
     }
   };
 
+  const getCodeSnippet = (lang: string, apiKey: string, merchantId: string, channelId: string) => {
+    const baseUrl = 'https://apipaylor.webnixke.com/api/v1';
+
+    switch (lang) {
+      case 'nodejs':
+        return `const axios = require('axios');
+
+const response = await axios.post(
+  '${baseUrl}/merchants/payments/stk-push',
+  {
+    phone: '254712345678',
+    amount: 1000,
+    reference: 'ORDER-123',
+    channelId: '${channelId}',
+    description: 'Payment for Service'
+  },
+  {
+    headers: {
+      'Authorization': 'Bearer ${apiKey}',
+      'Content-Type': 'application/json'
+    }
+  }
+);`;
+      case 'python':
+        return `import requests
+
+url = "${baseUrl}/merchants/payments/stk-push"
+headers = {
+    "Authorization": "Bearer ${apiKey}",
+    "Content-Type": "application/json"
+}
+payload = {
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-123",
+    "channelId": "${channelId}",
+    "description": "Payment for Service"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`;
+      case 'php':
+        return `<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "${baseUrl}/merchants/payments/stk-push",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => json_encode([
+    "phone" => "254712345678",
+    "amount" => 1000,
+    "reference" => "ORDER-123",
+    "channelId" => "${channelId}",
+    "description" => "Payment for Service"
+  ]),
+  CURLOPT_HTTPHEADER => [
+    "Authorization: Bearer ${apiKey}",
+    "Content-Type: application/json"
+  ],
+]);
+
+$response = curl_exec($curl);
+echo $response;`;
+      case 'curl':
+        return `curl -X POST ${baseUrl}/merchants/payments/stk-push \\
+  -H "Authorization: Bearer ${apiKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-123",
+    "channelId": "${channelId}",
+    "description": "Payment for Service"
+  }'`;
+      default:
+        return '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -184,6 +266,13 @@ export default function ApiKeys() {
             >
               <Plus className="-ml-0.5 h-5 w-5" aria-hidden="true" />
               Create Secret Key
+            </button>
+            <button
+              onClick={() => window.open('https://paylor.webnixke.com/docs', '_blank')}
+              className="inline-flex items-center gap-x-2 rounded-md bg-surface border border-border px-3.5 py-2.5 text-sm font-semibold text-main shadow-sm hover:bg-white/5 transition-colors ml-3"
+            >
+              <FileText className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+              View API Docs
             </button>
           </div>
         </div>
@@ -269,6 +358,30 @@ export default function ApiKeys() {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-4 mb-6">
+            <button
+              onClick={() => window.open('https://paylor.webnixke.com/docs#authentication', '_blank')}
+              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
+            >
+              <Lock className="h-3.5 w-3.5 text-primary" />
+              Auth Guide
+            </button>
+            <button
+              onClick={() => window.open('https://paylor.webnixke.com/docs#stk-push', '_blank')}
+              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
+            >
+              <Code className="h-3.5 w-3.5 text-primary" />
+              SDK Examples
+            </button>
+            <button
+              onClick={() => window.open('https://paylor.webnixke.com/docs#webhooks-overview', '_blank')}
+              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
+            >
+              <Webhook className="h-3.5 w-3.5 text-primary" />
+              Webhook Setup
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -352,6 +465,51 @@ export default function ApiKeys() {
             </div>
           </div>
 
+          <div className="mt-8 border-t border-border pt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-bold text-main uppercase tracking-wider">Quick Code Snippet</h4>
+              <div className="flex bg-background border border-border rounded-lg p-1">
+                {(['nodejs', 'python', 'php', 'curl'] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => setSelectedLang(lang)}
+                    className={clsx(
+                      'px-3 py-1 text-[10px] font-bold rounded-md transition-all uppercase',
+                      selectedLang === lang ? 'bg-primary text-main shadow-sm' : 'text-muted hover:text-main'
+                    )}
+                  >
+                    {lang === 'nodejs' ? 'Node.js' : lang === 'python' ? 'Python' : lang === 'php' ? 'PHP' : 'cURL'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => {
+                    const activeKey = keys.find(k => k.isActive)?.apiKey || 'YOUR_API_KEY';
+                    const channelAlias = channels.find(c => c.id === selectedChannelId)?.alias || 'CH_XXXXXX';
+                    const code = getCodeSnippet(selectedLang, activeKey, merchant?.id, channelAlias);
+                    copyToClipboard(code);
+                  }}
+                  className="p-2 bg-surface border border-border rounded-lg text-muted hover:text-primary transition-colors shadow-lg"
+                  title="Copy Code"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+              </div>
+              <pre className="bg-background border border-border rounded-xl p-6 font-mono text-sm text-main overflow-x-auto">
+                <code className="block">
+                  {getCodeSnippet(selectedLang, keys.find(k => k.isActive)?.apiKey || 'YOUR_API_KEY', merchant?.id, channels.find(c => c.id === selectedChannelId)?.alias || 'CH_XXXXXX')}
+                </code>
+              </pre>
+            </div>
+            <p className="mt-3 text-[10px] text-muted italic">
+              * This snippet demonstrates a basic STK Push initiation. Replace values as needed.
+            </p>
+          </div>
+
           <div className="mt-6 p-3 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-muted leading-relaxed">
@@ -430,7 +588,7 @@ export default function ApiKeys() {
           confirmText={confirmModal.confirmText || 'Confirm'}
           variant={confirmModal.variant as any}
         />
-      </div>
-    </DashboardLayout>
+      </div >
+    </DashboardLayout >
   );
 }

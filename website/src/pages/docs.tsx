@@ -1,11 +1,40 @@
+import { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { Book, Code, Lock, Shield, Terminal, Zap, Activity, AlertCircle, CheckCircle2, Copy, ExternalLink, RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
+import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Docs() {
+  const [selectedLang, setSelectedLang] = useState<'nodejs' | 'python' | 'php' | 'curl'>('nodejs');
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
+
+  const LanguageTabs = () => (
+    <div className="flex bg-background/50 border border-border rounded-xl p-1 mb-6 w-fit relative overflow-hidden">
+      {(['nodejs', 'python', 'php', 'curl'] as const).map((lang) => (
+        <button
+          key={lang}
+          onClick={() => setSelectedLang(lang)}
+          className={clsx(
+            'relative px-4 py-2 text-xs font-bold rounded-lg transition-all uppercase tracking-wider z-10',
+            selectedLang === lang ? 'text-main' : 'text-muted hover:text-main'
+          )}
+        >
+          {selectedLang === lang && (
+            <motion.div
+              layoutId="activeTab"
+              className="absolute inset-0 bg-primary shadow-lg shadow-primary/20 rounded-lg -z-10"
+              transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+          {lang === 'nodejs' ? 'Node.js' : lang === 'python' ? 'Python' : lang === 'php' ? 'PHP' : 'cURL'}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <Layout title="Documentation - Paylor" description="Comprehensive guides and API reference for integrating Paylor.">
@@ -57,9 +86,13 @@ export default function Docs() {
                   <span className="text-sm font-bold uppercase tracking-widest">Developer First</span>
                 </div>
                 <h1 className="text-4xl font-extrabold text-main mb-6">API Documentation</h1>
-                <p className="text-xl text-muted leading-relaxed max-w-3xl">
+                <p className="text-xl text-muted leading-relaxed max-w-3xl mb-8">
                   Paylor provides a robust, secure, and developer-friendly API for processing M-Pesa payments. Our platform abstracts the complexity of direct integration, allowing you to go live in minutes.
                 </p>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-bold text-main uppercase tracking-widest">Global Language:</span>
+                  <LanguageTabs />
+                </div>
               </div>
             </section>
 
@@ -116,12 +149,42 @@ export default function Docs() {
                 </div>
               </div>
 
+              <LanguageTabs />
+
               <div className="bg-background rounded-xl border border-border overflow-hidden mb-4">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-                  <span className="text-xs text-muted font-mono uppercase">NestJS / Axios</span>
+                  <span className="text-xs text-muted font-mono uppercase">Raw HTTP Header</span>
                 </div>
-                <div className="p-6 font-mono text-sm leading-relaxed">
-                  <pre className="text-main">{`import axios from 'axios';
+                <div className="p-6 font-mono text-sm text-main group relative">
+                  <div className="text-muted italic mb-2">// Set this header on every request</div>
+                  <div>Authorization: Bearer <span className="text-primary font-bold">YOUR_API_KEY</span></div>
+                  <button
+                    onClick={() => copyToClipboard('Authorization: Bearer YOUR_API_KEY')}
+                    className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {selectedLang === 'nodejs' && (
+                  <motion.div
+                    key="nodejs-auth"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden mb-4 transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-400" />
+                          <span className="text-xs text-muted font-mono uppercase">NestJS / Axios</span>
+                        </div>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`import axios from 'axios';
 
 const PAYLOR_API_KEY = process.env.PAYLOR_API_KEY; // e.g. payl_live_...
 const PAYLOR_BASE_URL = 'https://apipaylor.webnixke.com/api/v1';
@@ -142,15 +205,24 @@ const response = await axios.post(
     },
   }
 );`}</pre>
-                </div>
-              </div>
+                        <button
+                          onClick={() => copyToClipboard(`import axios from 'axios';\n\nconst PAYLOR_API_KEY = process.env.PAYLOR_API_KEY;\nconst PAYLOR_BASE_URL = 'https://apipaylor.webnixke.com/api/v1';\n\nconst response = await axios.post(\n  \`\${PAYLOR_BASE_URL}/merchants/payments/stk-push\`,\n  {\n    phone: '254712345678',\n    amount: 1000,\n    reference: 'ORDER-12345',\n    channelId: 'PAYL-XXXXXX',\n    description: 'Payment for Service',\n  },\n  {\n    headers: {\n      'Authorization': \`Bearer \${PAYLOR_API_KEY}\`,\n      'Content-Type': 'application/json',\n    },\n  }\n);`)}
+                          className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
 
-              <div className="bg-background rounded-xl border border-border overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-                  <span className="text-xs text-muted font-mono uppercase">Node.js / Fetch</span>
-                </div>
-                <div className="p-6 font-mono text-sm leading-relaxed">
-                  <pre className="text-main">{`const response = await fetch(
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-400" />
+                          <span className="text-xs text-muted font-mono uppercase">Node.js / Fetch</span>
+                        </div>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`const response = await fetch(
   'https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push',
   {
     method: 'POST',
@@ -167,8 +239,147 @@ const response = await axios.post(
     }),
   }
 );`}</pre>
-                </div>
-              </div>
+                        <button
+                          onClick={() => copyToClipboard(`const response = await fetch(\n  'https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push',\n  {\n    method: 'POST',\n    headers: {\n      'Authorization': \`Bearer \${process.env.PAYLOR_API_KEY}\`,\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      phone: '254712345678',\n      amount: 1000,\n      reference: 'ORDER-12345',\n      channelId: 'PAYL-XXXXXX',\n      description: 'Payment for Service',\n    }),\n  }\n);`)}
+                          className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'python' && (
+                  <motion.div
+                    key="python-auth"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                          <span className="text-xs text-muted font-mono uppercase">Python / Requests</span>
+                        </div>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`import requests
+
+url = "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-12345",
+    "channelId": "PAYL-XXXXXX",
+    "description": "Payment for Service"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`}</pre>
+                        <button
+                          onClick={() => copyToClipboard(`import requests\n\nurl = "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push"\nheaders = {\n    "Authorization": "Bearer YOUR_API_KEY",\n    "Content-Type": "application/json"\n}\npayload = {\n    "phone": "254712345678",\n    "amount": 1000,\n    "reference": "ORDER-12345",\n    "channelId": "PAYL-XXXXXX",\n    "description": "Payment for Service"\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\nprint(response.json())`)}
+                          className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'php' && (
+                  <motion.div
+                    key="php-auth"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-purple-400" />
+                          <span className="text-xs text-muted font-mono uppercase">PHP / cURL</span>
+                        </div>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => json_encode([
+    "phone" => "254712345678",
+    "amount" => 1000,
+    "reference" => "ORDER-12345",
+    "channelId" => "PAYL-XXXXXX",
+    "description" => "Payment for Service"
+  ]),
+  CURLOPT_HTTPHEADER => [
+    "Authorization: Bearer YOUR_API_KEY",
+    "Content-Type: application/json"
+  ],
+]);
+
+$response = curl_exec($curl);
+echo $response;`}</pre>
+                        <button
+                          onClick={() => copyToClipboard(`<?php\n$curl = curl_init();\n\ncurl_setopt_array($curl, [\n  CURLOPT_URL => "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push",\n  CURLOPT_RETURNTRANSFER => true,\n  CURLOPT_CUSTOMREQUEST => "POST",\n  CURLOPT_POSTFIELDS => json_encode([\n    "phone" => "254712345678",\n    "amount" => 1000,\n    "reference" => "ORDER-12345",\n    "channelId" => "PAYL-XXXXXX",\n    "description" => "Payment for Service"\n  ]),\n  CURLOPT_HTTPHEADER => [\n    "Authorization: Bearer YOUR_API_KEY",\n    "Content-Type: application/json"\n  ],\n]);\n\n$response = curl_exec($curl);\necho $response;`)}
+                          className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'curl' && (
+                  <motion.div
+                    key="curl-auth"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-xs text-muted font-mono uppercase">cURL Request</span>
+                        </div>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`curl -X POST https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-12345",
+    "channelId": "PAYL-XXXXXX",
+    "description": "Payment for Service",
+  }'`}</pre>
+                        <button
+                          onClick={() => copyToClipboard(`curl -X POST https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "phone": "254712345678",\n    "amount": 1000,\n    "reference": "ORDER-12345",\n    "channelId": "PAYL-XXXXXX",\n    "description": "Payment for Service",\n  }'`)}
+                          className="absolute top-6 right-6 p-2 bg-surface/50 border border-border rounded-lg text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all shadow-xl"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </section>
 
             <section id="base-urls" className="scroll-mt-24">
@@ -294,6 +505,138 @@ const response = await axios.post(
 }`}</pre>
                     </div>
                   </div>
+
+                  <div className="pt-4">
+                    <h3 className="text-sm font-bold text-main uppercase tracking-widest mb-4">Implementation Example</h3>
+                    <LanguageTabs />
+
+                    <AnimatePresence mode="wait">
+                      {selectedLang === 'nodejs' && (
+                        <motion.div
+                          key="nodejs-stk"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                            <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                              <pre className="text-main">{`const axios = require('axios');
+
+const response = await axios.post(
+  'https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push',
+  {
+    phone: '254712345678',
+    amount: 1000,
+    reference: 'ORDER-123',
+    channelId: 'PAYL-XXXXXX',
+    description: 'Payment for Service'
+  },
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    }
+  }
+);`}</pre>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {selectedLang === 'python' && (
+                        <motion.div
+                          key="python-stk"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                            <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                              <pre className="text-main">{`import requests
+
+url = "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push"
+payload = {
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-123",
+    "channelId": "PAYL-XXXXXX",
+    "description": "Payment for Service"
+}
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`}</pre>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {selectedLang === 'php' && (
+                        <motion.div
+                          key="php-stk"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                            <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                              <pre className="text-main">{`<?php
+$curl = curl_init();
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_CUSTOMREQUEST => "POST",
+  CURLOPT_POSTFIELDS => json_encode([
+    "phone" => "254712345678",
+    "amount" => 1000,
+    "reference" => "ORDER-123",
+    "channelId" => "PAYL-XXXXXX",
+    "description" => "Payment for Service"
+  ]),
+  CURLOPT_HTTPHEADER => [
+    "Authorization: Bearer YOUR_API_KEY",
+    "Content-Type: application/json"
+  ],
+]);
+$response = curl_exec($curl);
+echo $response;`}</pre>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {selectedLang === 'curl' && (
+                        <motion.div
+                          key="curl-stk"
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                            <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                              <pre className="text-main">{`curl -X POST https://apipaylor.webnixke.com/api/v1/merchants/payments/stk-push \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "phone": "254712345678",
+    "amount": 1000,
+    "reference": "ORDER-123",
+    "channelId": "PAYL-XXXXXX",
+    "description": "Payment for Service"
+  }'`}</pre>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </section>
@@ -398,12 +741,25 @@ const response = await axios.post(
                 </div>
               </div>
 
-              <div className="bg-background rounded-xl border border-border overflow-hidden mt-6 mb-4">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-                  <span className="text-xs text-muted font-mono uppercase">NestJS — Callback Endpoint</span>
-                </div>
-                <div className="p-6 font-mono text-sm leading-relaxed">
-                  <pre className="text-main">{`import { Controller, Post, Headers, Body, HttpCode } from '@nestjs/common';
+              <div className="mb-6">
+                <LanguageTabs />
+              </div>
+
+              <AnimatePresence mode="wait">
+                {selectedLang === 'nodejs' && (
+                  <motion.div
+                    key="nodejs-webhook"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden mb-6 transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <span className="text-xs text-muted font-mono uppercase">NestJS — Callback Endpoint</span>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`import { Controller, Post, Headers, Body, HttpCode } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Controller('api')
@@ -414,7 +770,6 @@ export class PaylorController {
     @Headers('x-webhook-signature') signature: string,
     @Body() body: any,
   ) {
-    // 1. Verify the signature (optional but recommended)
     const secret = process.env.PAYLOR_WEBHOOK_SECRET;
     if (secret) {
       const expected = crypto
@@ -426,27 +781,23 @@ export class PaylorController {
       }
     }
 
-    // 2. Handle the event
     const { event, transaction } = body;
     if (event === 'payment.success') {
-      // e.g. credit user wallet, fulfill order...
       console.log('Payment received:', transaction.reference);
-    } else if (event === 'payment.failed') {
-      console.log('Payment failed:', transaction.reference);
     }
 
     return { received: true };
   }
 }`}</pre>
-                </div>
-              </div>
+                      </div>
+                    </div>
 
-              <div className="bg-background rounded-xl border border-border overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-                  <span className="text-xs text-muted font-mono uppercase">Express — Callback Endpoint</span>
-                </div>
-                <div className="p-6 font-mono text-sm leading-relaxed">
-                  <pre className="text-main">{`import express from 'express';
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <span className="text-xs text-muted font-mono uppercase">Express — Callback Endpoint</span>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`import express from 'express';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -455,7 +806,6 @@ router.post('/paylor-callback', (req, res) => {
   const signature = req.headers['x-webhook-signature'];
   const secret = process.env.PAYLOR_WEBHOOK_SECRET;
 
-  // 1. Verify signature
   if (secret) {
     const expected = crypto
       .createHmac('sha256', secret)
@@ -466,17 +816,115 @@ router.post('/paylor-callback', (req, res) => {
     }
   }
 
-  // 2. Handle the event
   const { event, transaction } = req.body;
   if (event === 'payment.success') {
-    // e.g. credit user wallet, fulfill order...
     console.log('Payment received:', transaction.reference);
   }
 
   res.json({ received: true });
 });`}</pre>
-                </div>
-              </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'python' && (
+                  <motion.div
+                    key="python-webhook"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <span className="text-xs text-muted font-mono uppercase">Python Flask — Callback Endpoint</span>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`from flask import Flask, request, jsonify
+import hmac
+import hashlib
+import json
+
+app = Flask(__name__)
+
+@app.route('/paylor-callback', methods=['POST'])
+def paylor_callback():
+    signature = request.headers.get('x-webhook-signature')
+    secret = "YOUR_WEBHOOK_SECRET"
+    
+    # Verify signature
+    expected = hmac.new(
+        secret.encode(),
+        request.data,
+        hashlib.sha256
+    ).hexdigest()
+    
+    if signature != expected:
+        return jsonify({"error": "Invalid signature"}), 401
+    
+    data = request.json
+    if data['event'] == 'payment.success':
+        print(f"Payment received: {data['transaction']['reference']}")
+        
+    return jsonify({"received": True}), 200`}</pre>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'php' && (
+                  <motion.div
+                    key="php-webhook"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border overflow-hidden transition-all duration-300">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
+                        <span className="text-xs text-muted font-mono uppercase">PHP — Callback Endpoint</span>
+                      </div>
+                      <div className="p-6 font-mono text-sm leading-relaxed relative group transition-all duration-300">
+                        <pre className="text-main">{`<?php
+$secret = 'YOUR_WEBHOOK_SECRET';
+$signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'];
+$payload = file_get_contents('php://input');
+
+$expected = hash_hmac('sha256', $payload, $secret);
+
+if ($signature !== $expected) {
+    http_response_code(401);
+    exit();
+}
+
+$data = json_decode($payload, true);
+if ($data['event'] === 'payment.success') {
+    // Process payment
+    error_log("Payment received: " . $data['transaction']['reference']);
+}
+
+echo json_encode(['received' => true]);`}</pre>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {selectedLang === 'curl' && (
+                  <motion.div
+                    key="curl-webhook"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-background rounded-xl border border-border p-8 text-center transition-all duration-300">
+                      <Terminal className="h-12 w-12 text-muted mx-auto mb-4" />
+                      <p className="text-muted text-sm">Webhooks are server-side endpoints. Use the other tabs to see implementation examples in your preferred backend language.</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </section>
           </main>
         </div>
