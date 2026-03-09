@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const merchantRegistrationSchema = z.object({
   username: z.string().min(3),
   email: z.string().email(),
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
+  firstName: z.string().min(2).optional(),
+  lastName: z.string().min(2).optional(),
   phoneNumber: z.string().regex(/^\+?[\d\s-]{9,15}$/, 'Invalid phone number format'),
   password: z.string().min(6),
   referralSource: z.string().optional(),

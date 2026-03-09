@@ -19,6 +19,8 @@ export default function Settings() {
     const [generalForm, setGeneralForm] = useState({
         businessName: '',
         email: '',
+        settlementType: 'PAYBILL',
+        shortcode: ''
     });
     const [notifications, setNotifications] = useState({
         email: true,
@@ -44,6 +46,8 @@ export default function Settings() {
             setGeneralForm({
                 businessName: m.businessName || '',
                 email: m.email || '',
+                settlementType: m.settlementType || 'PAYBILL',
+                shortcode: m.shortcode || ''
             });
             if (m.notifications) {
                 setNotifications(m.notifications);
@@ -166,10 +170,36 @@ export default function Settings() {
                                             className="w-full px-4 py-2 bg-surface/50 border border-border rounded-lg text-muted cursor-not-allowed"
                                         />
                                     </div>
+                                    <div className="space-y-1">
+                                        <label className="block text-sm font-medium text-muted">Settlement Type</label>
+                                        <select
+                                            value={generalForm.settlementType}
+                                            onChange={(e) => setGeneralForm({ ...generalForm, settlementType: e.target.value })}
+                                            className="w-full px-4 py-2 bg-background border border-border rounded-lg text-main focus:ring-1 focus:ring-primary outline-none"
+                                        >
+                                            <option value="PAYBILL">Paybill</option>
+                                            <option value="TILL">Till Number</option>
+                                            <option value="BANK_PAYBILL">Bank Paybill</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="block text-sm font-medium text-muted">Shortcode / Till Number</label>
+                                        <input
+                                            type="text"
+                                            value={generalForm.shortcode}
+                                            onChange={(e) => setGeneralForm({ ...generalForm, shortcode: e.target.value })}
+                                            className="w-full px-4 py-2 bg-background border border-border rounded-lg text-main focus:ring-1 focus:ring-primary outline-none"
+                                            placeholder="e.g. 123456"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="pt-4">
                                     <button
-                                        onClick={() => handleUpdateProfile({ businessName: generalForm.businessName })}
+                                        onClick={() => handleUpdateProfile({
+                                            businessName: generalForm.businessName,
+                                            settlementType: generalForm.settlementType,
+                                            shortcode: generalForm.shortcode
+                                        })}
                                         disabled={isSaving}
                                         className="bg-primary hover:bg-primary-hover text-main px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
                                     >

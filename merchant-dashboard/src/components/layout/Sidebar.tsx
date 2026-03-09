@@ -27,7 +27,7 @@ import { useState } from 'react';
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
-    { name: 'Direct Charge', href: '/stk-push', icon: Zap },
+    { name: 'STK Push', href: '/stk-push', icon: Zap },
     { name: 'Channels', href: '/channels', icon: Store },
     { name: 'Wallet', href: '/wallet', icon: Wallet },
     { name: 'Webhooks', href: '/webhooks', icon: Webhook },
@@ -71,7 +71,7 @@ const Sidebar = () => {
         const primaryItems = [
             { name: 'Home', href: '/dashboard', icon: LayoutDashboard },
             { name: 'Trans', href: '/transactions', icon: ArrowLeftRight },
-            { name: 'Direct', href: '/stk-push', icon: Zap },
+            { name: 'STK Push', href: '/stk-push', icon: Zap },
             { name: 'Wallet', href: '/wallet', icon: Wallet },
         ];
 

@@ -210,7 +210,7 @@ export default function Dashboard() {
                   className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-background/50 hover:border-primary/50 transition-all group"
                 >
                   <Zap className="h-6 w-6 text-yellow-500 mb-2 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-semibold text-main">Direct Charge</span>
+                  <span className="text-xs font-semibold text-main">STK Push</span>
                 </Link>
                 <Link
                   href="/api-keys"

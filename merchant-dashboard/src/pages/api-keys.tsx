@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import { Plus, Copy, Trash2, Key, AlertTriangle, FileText, Lock, Code, Webhook } from 'lucide-react';
+import { Plus, Copy, Trash2, Key, AlertTriangle, FileText, Lock } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function ApiKeys() {
@@ -19,7 +19,6 @@ export default function ApiKeys() {
   const [merchant, setMerchant] = useState<any>(null);
   const [channels, setChannels] = useState<any[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<string>('');
-  const [selectedLang, setSelectedLang] = useState<'nodejs' | 'python' | 'php' | 'curl'>('nodejs');
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -48,6 +47,7 @@ export default function ApiKeys() {
     syncAliases();
     loadChannels();
   }, [router]);
+
 
   const syncAliases = async () => {
     try {
@@ -161,85 +161,6 @@ export default function ApiKeys() {
     }
   };
 
-  const getCodeSnippet = (lang: string, apiKey: string, merchantId: string, channelId: string) => {
-    const baseUrl = 'https://apipaylor.webnixke.com/api/v1';
-
-    switch (lang) {
-      case 'nodejs':
-        return `const axios = require('axios');
-
-const response = await axios.post(
-  '${baseUrl}/merchants/payments/stk-push',
-  {
-    phone: '254712345678',
-    amount: 1000,
-    reference: 'ORDER-123',
-    channelId: '${channelId}',
-    description: 'Payment for Service'
-  },
-  {
-    headers: {
-      'Authorization': 'Bearer ${apiKey}',
-      'Content-Type': 'application/json'
-    }
-  }
-);`;
-      case 'python':
-        return `import requests
-
-url = "${baseUrl}/merchants/payments/stk-push"
-headers = {
-    "Authorization": "Bearer ${apiKey}",
-    "Content-Type": "application/json"
-}
-payload = {
-    "phone": "254712345678",
-    "amount": 1000,
-    "reference": "ORDER-123",
-    "channelId": "${channelId}",
-    "description": "Payment for Service"
-}
-
-response = requests.post(url, json=payload, headers=headers)
-print(response.json())`;
-      case 'php':
-        return `<?php
-$curl = curl_init();
-
-curl_setopt_array($curl, [
-  CURLOPT_URL => "${baseUrl}/merchants/payments/stk-push",
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_CUSTOMREQUEST => "POST",
-  CURLOPT_POSTFIELDS => json_encode([
-    "phone" => "254712345678",
-    "amount" => 1000,
-    "reference" => "ORDER-123",
-    "channelId" => "${channelId}",
-    "description" => "Payment for Service"
-  ]),
-  CURLOPT_HTTPHEADER => [
-    "Authorization: Bearer ${apiKey}",
-    "Content-Type: application/json"
-  ],
-]);
-
-$response = curl_exec($curl);
-echo $response;`;
-      case 'curl':
-        return `curl -X POST ${baseUrl}/merchants/payments/stk-push \\
-  -H "Authorization: Bearer ${apiKey}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "phone": "254712345678",
-    "amount": 1000,
-    "reference": "ORDER-123",
-    "channelId": "${channelId}",
-    "description": "Payment for Service"
-  }'`;
-      default:
-        return '';
-    }
-  };
 
   if (loading) {
     return (
@@ -265,7 +186,7 @@ echo $response;`;
               className="inline-flex items-center gap-x-2 rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-main shadow-sm hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors"
             >
               <Plus className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-              Create Secret Key
+              Create API Key
             </button>
             <button
               onClick={() => window.open('https://paylor.webnixke.com/docs', '_blank')}
@@ -346,50 +267,42 @@ echo $response;`;
           </div>
         )}
 
-        {/* Quick Integration Credentials */}
-        <div className="glass-card rounded-xl border border-border bg-surface p-6 mb-6 transition-colors duration-300">
-          <div className="flex items-center gap-2 mb-4 border-b border-border pb-4">
+        {/* Integration Credentials */}
+        <div className="glass-card rounded-xl border border-border bg-surface p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Key className="h-5 w-5 text-primary" />
+              <Lock className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-main">Quick Integration Credentials</h3>
-              <p className="text-sm text-muted">API Username: <span className="font-mono text-primary select-all">{merchant?.username}</span></p>
+              <h3 className="text-lg font-bold text-main">Integration Credentials</h3>
+              <p className="text-sm text-muted">Use these credentials along with your API Key to authenticate requests.</p>
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-4 mb-6">
-            <button
-              onClick={() => window.open('https://paylor.webnixke.com/docs#authentication', '_blank')}
-              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
-            >
-              <Lock className="h-3.5 w-3.5 text-primary" />
-              Auth Guide
-            </button>
-            <button
-              onClick={() => window.open('https://paylor.webnixke.com/docs#stk-push', '_blank')}
-              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
-            >
-              <Code className="h-3.5 w-3.5 text-primary" />
-              SDK Examples
-            </button>
-            <button
-              onClick={() => window.open('https://paylor.webnixke.com/docs#webhooks-overview', '_blank')}
-              className="px-4 py-2 rounded-lg bg-surface border border-border text-xs font-bold text-main hover:bg-white/5 transition-all flex items-center gap-2"
-            >
-              <Webhook className="h-3.5 w-3.5 text-primary" />
-              Webhook Setup
-            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">Select Payment Channel</label>
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">Webhook ID</label>
+                <div className="flex items-center justify-between gap-2 p-3 bg-background/50 rounded-xl border border-border">
+                  <code className="text-sm text-primary font-mono select-all truncate">
+                    {keys.find(k => k.isActive)?.id || 'Create a key first'}
+                  </code>
+                  <button
+                    disabled={!keys.find(k => k.isActive)}
+                    onClick={() => copyToClipboard(keys.find(k => k.isActive)?.id || '')}
+                    className="p-1.5 hover:bg-surface rounded text-muted hover:text-primary transition-colors disabled:opacity-30"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">Select Payment Channel</label>
                 <select
                   value={selectedChannelId}
                   onChange={(e) => setSelectedChannelId(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-main text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-main text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer"
                 >
                   {channels.length === 0 ? (
                     <option value="">No channels available</option>
@@ -401,119 +314,33 @@ echo $response;`;
                     ))
                   )}
                 </select>
-                {channels.length === 0 && (
-                  <button
-                    onClick={() => router.push('/channels')}
-                    className="mt-2 text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    <Plus className="h-3 w-3" /> Create your first channel
-                  </button>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">API Password</label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 rounded-lg bg-background border border-border px-3 py-2.5 font-mono text-sm text-main select-all">
-                    {merchant?.id || 'Loading...'}
-                  </code>
-                  <button
-                    onClick={() => copyToClipboard(merchant?.id || '')}
-                    className="p-2.5 hover:bg-surface rounded-lg text-muted hover:text-primary transition-colors border border-border"
-                    title="Copy"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">Webhook Secret (Key ID)</label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 rounded-lg bg-background border border-border px-3 py-2.5 font-mono text-sm text-main select-all">
-                    {keys.find(k => k.isActive)?.id || 'No active key'}
-                  </code>
-                  <button
-                    disabled={!keys.find(k => k.isActive)}
-                    onClick={() => copyToClipboard(keys.find(k => k.isActive)?.id || '')}
-                    className="p-2.5 hover:bg-surface rounded-lg text-muted hover:text-primary transition-colors border border-border disabled:opacity-30"
-                    title="Copy Secret"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1.5">Channel ID</label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 rounded-lg bg-background border border-border px-3 py-2.5 font-mono text-sm text-main select-all">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">Payment Channel ID</label>
+                <div className="flex items-center justify-between gap-2 p-3 bg-background/50 rounded-xl border border-border">
+                  <code className="text-sm text-main font-mono select-all truncate">
                     {channels.find(c => c.id === selectedChannelId)?.alias || '---'}
                   </code>
                   <button
                     disabled={!selectedChannelId}
                     onClick={() => copyToClipboard(channels.find(c => c.id === selectedChannelId)?.alias || '')}
-                    className="p-2.5 hover:bg-surface rounded-lg text-muted hover:text-primary transition-colors border border-border disabled:opacity-30"
-                    title="Copy Channel ID"
+                    className="p-1.5 hover:bg-surface rounded text-muted hover:text-primary transition-colors disabled:opacity-30"
                   >
                     <Copy className="h-4 w-4" />
                   </button>
                 </div>
+                <p className="mt-1 text-[10px] text-muted italic">Use this as 'channelId' in your API requests.</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 border-t border-border pt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-bold text-main uppercase tracking-wider">Quick Code Snippet</h4>
-              <div className="flex bg-background border border-border rounded-lg p-1">
-                {(['nodejs', 'python', 'php', 'curl'] as const).map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => setSelectedLang(lang)}
-                    className={clsx(
-                      'px-3 py-1 text-[10px] font-bold rounded-md transition-all uppercase',
-                      selectedLang === lang ? 'bg-primary text-main shadow-sm' : 'text-muted hover:text-main'
-                    )}
-                  >
-                    {lang === 'nodejs' ? 'Node.js' : lang === 'python' ? 'Python' : lang === 'php' ? 'PHP' : 'cURL'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => {
-                    const activeKey = keys.find(k => k.isActive)?.apiKey || 'YOUR_API_KEY';
-                    const channelAlias = channels.find(c => c.id === selectedChannelId)?.alias || 'CH_XXXXXX';
-                    const code = getCodeSnippet(selectedLang, activeKey, merchant?.id, channelAlias);
-                    copyToClipboard(code);
-                  }}
-                  className="p-2 bg-surface border border-border rounded-lg text-muted hover:text-primary transition-colors shadow-lg"
-                  title="Copy Code"
-                >
-                  <Copy className="h-4 w-4" />
-                </button>
-              </div>
-              <pre className="bg-background border border-border rounded-xl p-6 font-mono text-sm text-main overflow-x-auto">
-                <code className="block">
-                  {getCodeSnippet(selectedLang, keys.find(k => k.isActive)?.apiKey || 'YOUR_API_KEY', merchant?.id, channels.find(c => c.id === selectedChannelId)?.alias || 'CH_XXXXXX')}
-                </code>
-              </pre>
-            </div>
-            <p className="mt-3 text-[10px] text-muted italic">
-              * This snippet demonstrates a basic STK Push initiation. Replace values as needed.
-            </p>
-          </div>
-
-          <div className="mt-6 p-3 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
+          <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-muted leading-relaxed">
-              <span className="font-bold text-primary">Integration Note:</span> Authenticate your requests using the <span className="text-main font-medium">Authorization: Bearer YOUR_API_KEY</span> header. Your <span className="text-main">API Key</span> acts as the high-security bearer token.
+            <p className="text-sm text-muted">
+              <span className="font-bold text-primary">Security Note:</span> Authenticate your requests using the <code className="text-main">Authorization: Bearer YOUR_API_KEY</code> header. Never share your API key.
             </p>
           </div>
         </div>
@@ -526,7 +353,7 @@ echo $response;`;
             <thead className="bg-surface/50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Key ID / Webhook Secret</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Webhook ID</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Token Prefix</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Last Used</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Status</th>
@@ -541,7 +368,7 @@ echo $response;`;
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-main flex items-center gap-2">
                     <Key className="h-4 w-4 text-muted" />
                     <div className="flex flex-col">
-                      <span>{key.name || 'Secret Key'}</span>
+                      <span>{key.name || 'API Key'}</span>
                       <span className="text-[10px] text-muted font-normal">Auth token is this key</span>
                     </div>
                   </td>

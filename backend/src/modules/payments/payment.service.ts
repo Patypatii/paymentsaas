@@ -357,7 +357,7 @@ export class PaymentService {
       stats: [
         {
           name: 'Total Revenue',
-          value: `KES ${yearlyRevenue.toLocaleString()}`,
+          value: `KES ${yearlyRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           change: `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}%`,
           changeType: revenueChange >= 0 ? 'increase' : 'decrease'
         },
@@ -369,13 +369,13 @@ export class PaymentService {
         },
         {
           name: 'Credit Balance',
-          value: `${wallet.currency} ${wallet.balance.toLocaleString()}`,
+          value: `${wallet.currency} ${wallet.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           change: 'Available',
           changeType: 'increase'
         },
         {
           name: 'Average Transaction',
-          value: `KES ${averageTransaction.toLocaleString()}`,
+          value: `KES ${averageTransaction.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           change: 'Successful',
           changeType: 'increase'
         },

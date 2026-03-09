@@ -3,21 +3,23 @@ import { useRouter } from 'next/router';
 import { api } from '../services/api';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
     firstName: '',
     lastName: '',
+    username: '',
+    email: '',
     phoneNumber: '',
     password: '',
     confirmPassword: '',
     referralSource: '',
     termsAccepted: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -44,10 +46,10 @@ export default function Register() {
 
     try {
       const response = await api.post('/public/merchants/register', {
-        username: formData.username,
-        email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        username: formData.username,
+        email: formData.email,
         phoneNumber: formData.phoneNumber,
         password: formData.password,
         referralSource: formData.referralSource,
@@ -72,17 +74,17 @@ export default function Register() {
       <Head>
         <title>Sign Up - Paylor Merchant</title>
       </Head>
-      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden py-12">
-        <div className="absolute inset-0 bg-gradient-radial from-purple-900/10 to-transparent opacity-50 pointer-events-none" />
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
+        <div className="absolute inset-0 bg-gradient-radial from-primary/10 to-transparent opacity-50 pointer-events-none" />
 
-        <div className="w-full max-w-2xl glass-card p-8 rounded-2xl relative z-10">
+        <div className="w-full max-w-md glass-card p-8 rounded-2xl relative z-10">
           <div className="text-center mb-8">
             <img src="/favicon.svg" alt="Paylor" className="w-12 h-12 rounded-xl mb-4 mx-auto" />
             <h1 className="text-2xl font-bold text-main tracking-tight">Sign up to Paylor</h1>
             <p className="text-sm text-muted mt-2">Create your merchant account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-center gap-2">
                 <span className="block w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -90,32 +92,7 @@ export default function Register() {
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-300">Your username</label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
-                  placeholder="johndoe"
-                  minLength={3}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-300">Your email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-
+            <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-300">First Name</label>
@@ -141,6 +118,32 @@ export default function Register() {
                 </div>
               </div>
 
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-300">Your username</label>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                  placeholder="johndoe"
+                  minLength={3}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-300">Your email</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-300">Phone Number</label>
@@ -160,27 +163,45 @@ export default function Register() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-300">Your password</label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
-                    placeholder="••••••••"
-                    minLength={6}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50 pr-10"
+                      placeholder="••••••••"
+                      minLength={6}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-main transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-300">Confirm Password</label>
-                  <input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
-                    placeholder="••••••••"
-                    minLength={6}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-surface border border-border rounded-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50 pr-10"
+                      placeholder="••••••••"
+                      minLength={6}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-main transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 

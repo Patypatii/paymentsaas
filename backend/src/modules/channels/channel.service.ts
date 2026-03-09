@@ -86,7 +86,14 @@ export class ChannelService {
     static async updateChannel(
         merchantId: string,
         channelId: string,
-        data: { name?: string; status?: string }
+        data: {
+            name?: string;
+            status?: string;
+            type?: ChannelType;
+            number?: string;
+            bankName?: string;
+            accountNumber?: string;
+        }
     ) {
         const channel = await ChannelModel.findOneAndUpdate(
             {

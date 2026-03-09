@@ -11,6 +11,7 @@ export default function PaymentChannels() {
     const [loading, setLoading] = useState(true);
     const [channels, setChannels] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [editingChannel, setEditingChannel] = useState<any>(null);
     const [formData, setFormData] = useState({
         name: '',
         type: 'TILL',
@@ -60,15 +61,54 @@ export default function PaymentChannels() {
 
     const handleAddChannel = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation for Till/Paybill
+        if (formData.type !== 'BANK') {
+            if (!/^\d+$/.test(formData.number)) {
+                error('Channel number must only contain digits');
+                return;
+            }
+
+            if (formData.type === 'TILL') {
+                if (formData.number.length < 5 || formData.number.length > 8) {
+                    error('Till number must be between 5 and 8 digits');
+                    return;
+                }
+            } else if (formData.type === 'PAYBILL') {
+                if (formData.number.length < 5 || formData.number.length > 7) {
+                    error('Paybill number must be between 5 and 7 digits');
+                    return;
+                }
+            }
+        }
+
         try {
-            await api.post('/merchants/channels', formData);
+            if (editingChannel) {
+                await api.patch(`/merchants/channels/${editingChannel.id}`, formData);
+                success('Channel updated successfully!');
+            } else {
+                await api.post('/merchants/channels', formData);
+                success('Channel added successfully!');
+            }
             await fetchChannels();
             setIsAddModalOpen(false);
+            setEditingChannel(null);
             setFormData({ name: '', type: 'TILL', number: '', bankName: '', accountNumber: '' });
-            success('Channel added successfully!');
         } catch (err: any) {
-            error(err.response?.data?.message || 'Failed to add channel');
+            error(err.response?.data?.message || `Failed to ${editingChannel ? 'update' : 'add'} channel`);
         }
+    };
+
+    const handleEdit = (channel: any) => {
+        setEditingChannel(channel);
+        setFormData({
+            name: channel.name,
+            type: channel.type,
+            number: channel.number,
+            bankName: channel.bankName || '',
+            accountNumber: channel.accountNumber || ''
+        });
+        setIsAddModalOpen(true);
     };
 
     const confirmDelete = (id: string) => {
@@ -143,6 +183,12 @@ export default function PaymentChannels() {
                     {filteredChannels.map((channel) => (
                         <div key={channel.id} className="glass-card p-6 rounded-xl border border-border hover:border-white/20 transition-all group relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                <button
+                                    onClick={() => handleEdit(channel)}
+                                    className="p-2 hover:bg-white/10 rounded-lg text-muted hover:text-main transition-colors"
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                </button>
                                 <button
                                     onClick={() => confirmDelete(channel.id)}
                                     className="p-2 hover:bg-red-500/10 rounded-lg text-muted hover:text-red-400 transition-colors"
@@ -224,7 +270,9 @@ export default function PaymentChannels() {
             {isAddModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                     <div className="glass-card w-full max-w-md p-6 rounded-2xl border border-border relative animate-in fade-in zoom-in duration-200">
-                        <h2 className="text-xl font-bold text-main mb-6">Add Payment Channel</h2>
+                        <h2 className="text-xl font-bold text-main mb-6">
+                            {editingChannel ? 'Edit Payment Channel' : 'Add Payment Channel'}
+                        </h2>
 
                         <form onSubmit={handleAddChannel} className="space-y-4">
                             <div className="space-y-1">
@@ -290,14 +338,16 @@ export default function PaymentChannels() {
                                 </>
                             ) : (
                                 <div className="space-y-1">
-                                    <label className="block text-sm font-medium text-gray-300">Channel Number</label>
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        {formData.type === 'TILL' ? 'Till Number' : 'Paybill Number'}
+                                    </label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.number}
                                         onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                                         className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-main focus:ring-1 focus:ring-primary focus:border-primary/50 outline-none"
-                                        placeholder="e.g. 123456"
+                                        placeholder={formData.type === 'TILL' ? 'e.g. 123456' : 'e.g. 1234567'}
                                     />
                                 </div>
                             )}
@@ -305,7 +355,11 @@ export default function PaymentChannels() {
                             <div className="flex gap-3 mt-8">
                                 <button
                                     type="button"
-                                    onClick={() => setIsAddModalOpen(false)}
+                                    onClick={() => {
+                                        setIsAddModalOpen(false);
+                                        setEditingChannel(null);
+                                        setFormData({ name: '', type: 'TILL', number: '', bankName: '', accountNumber: '' });
+                                    }}
                                     className="flex-1 px-4 py-2.5 rounded-lg border border-border text-main hover:bg-surface/50 transition-colors"
                                 >
                                     Cancel
@@ -314,7 +368,7 @@ export default function PaymentChannels() {
                                     type="submit"
                                     className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-main hover:bg-primary-hover transition-colors font-medium shadow-lg hover:shadow-primary/25"
                                 >
-                                    Add Channel
+                                    {editingChannel ? 'Save Changes' : 'Add Channel'}
                                 </button>
                             </div>
                         </form>

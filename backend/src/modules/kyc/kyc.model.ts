@@ -3,8 +3,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 export enum KYCDocumentType {
     ID_FRONT = 'ID_FRONT',
     ID_BACK = 'ID_BACK',
-    BUSINESS_LICENSE = 'BUSINESS_LICENSE',
-    TAX_CERTIFICATE = 'TAX_CERTIFICATE',
     OTHER = 'OTHER'
 }
 

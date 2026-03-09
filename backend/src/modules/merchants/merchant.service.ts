@@ -7,8 +7,8 @@ export class MerchantService {
   static async register(data: {
     username: string;
     email: string;
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
     phoneNumber?: string;
     password: string;
     referralSource?: string;
@@ -61,7 +61,8 @@ export class MerchantService {
     console.log('✅ Merchant created:', merchant.id);
 
     // Send Welcome Email (Async)
-    EmailService.sendWelcomeEmail(merchant.email, `${merchant.firstName} ${merchant.lastName}`).catch(err => {
+    const displayName = data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.username;
+    EmailService.sendWelcomeEmail(merchant.email, displayName).catch(err => {
       console.error('Failed to send welcome email:', err);
     });
 
@@ -159,7 +160,6 @@ export class MerchantService {
 
   static async activateMerchant(merchantId: string): Promise<{
     merchant: IMerchant;
-    apiKey: string;
   }> {
     const merchant = await MerchantModel.findByIdAndUpdate(
       merchantId,
@@ -171,13 +171,8 @@ export class MerchantService {
       throw new AppError(ErrorCode.MERCHANT_NOT_FOUND, 'Merchant not found', 404);
     }
 
-    // Generate initial API key
-    const { ApiKeyService } = await import('../api-keys/apiKey.service');
-    const { apiKey } = await ApiKeyService.generateKey(merchantId, 'Initial Key');
-
     return {
       merchant,
-      apiKey,
     };
   }
 }

@@ -16,6 +16,10 @@ const createChannelSchema = z.object({
 const updateChannelSchema = z.object({
     name: z.string().min(1).max(100).optional(),
     status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+    type: z.nativeEnum(ChannelType).optional(),
+    number: z.string().min(1).max(20).optional(),
+    bankName: z.string().optional(),
+    accountNumber: z.string().optional(),
 });
 
 export const channelController = {

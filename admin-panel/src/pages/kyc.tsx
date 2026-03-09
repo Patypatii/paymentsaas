@@ -68,7 +68,7 @@ export default function KYC() {
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-white">KYC Management</h1>
                         <p className="mt-2 text-sm text-gray-400">
-                            Review merchant identities and business documents. Submissions are grouped by merchant.
+                            Review merchant identity documents and verification status. Submissions are grouped by merchant.
                         </p>
                     </div>
                 </div>

@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { useRouter } from 'next/router';
 import { useToast } from '../context/ToastContext';
 
-export default function DirectSTKPush() {
+export default function STKPushPage() {
     const router = useRouter();
     const { success, error, info } = useToast();
     const [loading, setLoading] = useState(false);
@@ -75,14 +75,14 @@ export default function DirectSTKPush() {
     };
 
     return (
-        <DashboardLayout title="Direct STK Push - Paylor">
+        <DashboardLayout title="STK Push - Paylor">
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <Send className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-main">Direct STK Push</h1>
+                        <h1 className="text-2xl font-bold text-main">STK Push</h1>
                         <p className="text-muted text-sm">Initiate an M-Pesa STK push payment directly to one of your channels.</p>
                     </div>
                 </div>
