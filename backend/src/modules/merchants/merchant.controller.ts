@@ -34,6 +34,10 @@ export const merchantController = {
     if (updates.businessName !== undefined) allowedUpdates.businessName = updates.businessName;
     if (updates.phoneNumber !== undefined) allowedUpdates.phoneNumber = updates.phoneNumber;
     if (updates.notifications !== undefined) allowedUpdates.notifications = updates.notifications;
+    if (updates.settlementType !== undefined) allowedUpdates.settlementType = updates.settlementType;
+    if (updates.shortcode !== undefined) allowedUpdates.shortcode = updates.shortcode;
+    if (updates.tillNumber !== undefined) allowedUpdates.tillNumber = updates.tillNumber;
+    if (updates.bankAccountNumber !== undefined) allowedUpdates.bankAccountNumber = updates.bankAccountNumber;
     // Add other safe fields as needed
 
     const merchant = await MerchantService.updateProfile(req.user.userId, allowedUpdates);

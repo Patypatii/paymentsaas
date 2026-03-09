@@ -14,7 +14,8 @@ import {
     FileText,
     Building2,
     UserCheck,
-    Send
+    Send,
+    Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useToast } from '../context/ToastContext';
@@ -23,8 +24,6 @@ import { useToast } from '../context/ToastContext';
 const DOCUMENT_TYPES = [
     { id: 'ID_FRONT', label: 'Government ID (Front)', description: 'National ID, Passport, or Driver\'s License', step: 1 },
     { id: 'ID_BACK', label: 'Government ID (Back)', description: 'Back side of your ID document', step: 1 },
-    { id: 'BUSINESS_LICENSE', label: 'Business License', description: 'Certification of incorporation or business permit', step: 2 },
-    { id: 'TAX_CERTIFICATE', label: 'Tax Certificate', description: 'KRA PIN or similar tax registration document', step: 2 },
 ];
 
 const STEPS = [
@@ -44,6 +43,13 @@ export default function KYC() {
     const [uploading, setUploading] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Business Setup State
+    const [businessData, setBusinessData] = useState({
+        businessName: '',
+        settlementType: 'PAYBILL',
+        shortcode: ''
+    });
+
     const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY;
     const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
     const authenticationEndpoint = `${process.env.NEXT_PUBLIC_API_URL || 'https://apipaylor.webnixke.com/api/v1'}/merchants/kyc/auth`;
@@ -56,7 +62,13 @@ export default function KYC() {
                     api.get('/merchants/profile')
                 ]);
                 setDocuments(kycRes.data.documents);
-                setMerchant(profileRes.data.merchant);
+                const m = profileRes.data.merchant;
+                setMerchant(m);
+                setBusinessData({
+                    businessName: m?.businessName || '',
+                    settlementType: m?.settlementType || 'PAYBILL',
+                    shortcode: m?.shortcode || ''
+                });
             } catch (error) {
                 console.error('Failed to fetch KYC data:', error);
             } finally {
@@ -121,6 +133,9 @@ export default function KYC() {
 
     const canGoToNext = () => {
         if (currentStep === 0) return true;
+        if (currentStep === 2) {
+            return businessData.businessName.trim().length > 0 && businessData.shortcode.trim().length > 0;
+        }
         if (currentStep === 3) return false;
         const stepDocs = getDocByStep(currentStep);
         return stepDocs.every(d => !!getDocStatus(d.id));
@@ -207,7 +222,7 @@ export default function KYC() {
                             <div className="space-y-2">
                                 <h2 className="text-xl font-bold text-main">Ready to verify your business?</h2>
                                 <p className="text-muted max-w-md mx-auto">
-                                    We need to verify your identity and business legitimacy to protect our platform. You'll need:
+                                    We need to verify your identity and set up your business profile to protect our platform. You'll need:
                                 </p>
                             </div>
                             <ul className="text-left max-w-sm mx-auto space-y-3">
@@ -215,15 +230,15 @@ export default function KYC() {
                                     <CheckCircle className="h-4 w-4 text-green-500" /> Government issued ID
                                 </li>
                                 <li className="flex items-center gap-3 text-main">
-                                    <CheckCircle className="h-4 w-4 text-green-500" /> Business registration certificate
+                                    <CheckCircle className="h-4 w-4 text-green-500" /> Business Name & Details
                                 </li>
                                 <li className="flex items-center gap-3 text-main">
-                                    <CheckCircle className="h-4 w-4 text-green-500" /> Tax registration documents
+                                    <CheckCircle className="h-4 w-4 text-green-500" /> Payment Settlement Details
                                 </li>
                             </ul>
                             <button
                                 onClick={() => setCurrentStep(1)}
-                                className="mt-4 px-8 py-3 bg-primary hover:bg-primary-dark text-main rounded-xl font-semibold transition-all flex items-center gap-2 mx-auto"
+                                className="mt-4 px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-xl font-semibold transition-all flex items-center gap-2 mx-auto"
                             >
                                 Start Verification <ChevronRight className="h-4 w-4" />
                             </button>
@@ -232,109 +247,169 @@ export default function KYC() {
 
                     {(currentStep === 1 || currentStep === 2) && (
                         <div className="space-y-6">
-                            <IKContext
-                                publicKey={publicKey}
-                                urlEndpoint={urlEndpoint}
-                                authenticator={authenticator}
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {getDocByStep(currentStep).map((docType) => {
-                                        const statusDoc = getDocStatus(docType.id);
-                                        const isUploading = uploading === docType.id;
-                                        return (
-                                            <div key={docType.id} className="flex flex-col space-y-4">
-                                                <div className="glass-card p-6 rounded-xl border border-border">
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-main">{docType.label}</h3>
-                                                        <p className="text-sm text-muted">{docType.description}</p>
-                                                    </div>
-                                                    <div className="relative group mt-4">
-                                                        {statusDoc ? (
-                                                            <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-black/20">
-                                                                <img
-                                                                    src={statusDoc.fileUrl}
-                                                                    alt={docType.label}
-                                                                    className="w-full h-full object-cover opacity-60"
-                                                                />
-                                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                                    <div className="flex flex-col items-center gap-2">
-                                                                        <CheckCircle className="h-8 w-8 text-green-500" />
-                                                                        <span className="text-xs font-medium text-white px-2 py-1 bg-black/60 rounded backdrop-blur-sm">
-                                                                            {statusDoc.status === 'REJECTED' ? 'Rejected' : 'Uploaded'}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                                {(statusDoc.status === 'DRAFT' || statusDoc.status === 'REJECTED') && (
-                                                                    <div className="absolute top-2 right-2">
-                                                                        <IKUpload
-                                                                            fileName={`${docType.id.toLowerCase()}_${Date.now()}`}
-                                                                            onSuccess={(res) => onUploadSuccess(res, docType.id)}
-                                                                            onError={onUploadError}
-                                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                                            onChange={() => setUploading(docType.id)}
-                                                                        />
-                                                                        <button className="p-1.5 bg-surface/80 hover:bg-surface rounded-lg backdrop-blur-md transition-colors border border-border">
-                                                                            <Upload className="h-4 w-4 text-main" />
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="relative border-2 border-dashed border-border rounded-xl p-8 transition-colors hover:border-primary/50 bg-surface/30">
-                                                                {isUploading ? (
-                                                                    <div className="flex flex-col items-center gap-2">
-                                                                        <Clock className="h-8 w-8 text-primary animate-spin" />
-                                                                        <span className="text-sm text-primary">Uploading...</span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        <IKUpload
-                                                                            fileName={`${docType.id.toLowerCase()}_${Date.now()}`}
-                                                                            useUniqueFileName={true}
-                                                                            onSuccess={(res) => onUploadSuccess(res, docType.id)}
-                                                                            onError={onUploadError}
-                                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                                            onChange={() => setUploading(docType.id)}
-                                                                        />
-                                                                        <div className="flex flex-col items-center gap-2 font-semibold">
-                                                                            <Upload className="h-8 w-8 text-muted" />
-                                                                            <span className="text-sm text-muted">Upload {docType.label}</span>
+                            {currentStep === 1 ? (
+                                <IKContext
+                                    publicKey={publicKey}
+                                    urlEndpoint={urlEndpoint}
+                                    authenticator={authenticator}
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {getDocByStep(currentStep).map((docType) => {
+                                            const statusDoc = getDocStatus(docType.id);
+                                            const isUploading = uploading === docType.id;
+                                            return (
+                                                <div key={docType.id} className="flex flex-col space-y-4">
+                                                    <div className="glass-card p-6 rounded-xl border border-border">
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold text-main">{docType.label}</h3>
+                                                            <p className="text-sm text-muted">{docType.description}</p>
+                                                        </div>
+                                                        <div className="relative group mt-4">
+                                                            {statusDoc ? (
+                                                                <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-black/20">
+                                                                    <img
+                                                                        src={statusDoc.fileUrl}
+                                                                        alt={docType.label}
+                                                                        className="w-full h-full object-cover opacity-60"
+                                                                    />
+                                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                                        <div className="flex flex-col items-center gap-2">
+                                                                            <CheckCircle className="h-8 w-8 text-green-500" />
+                                                                            <span className="text-xs font-medium text-white px-2 py-1 bg-black/60 rounded backdrop-blur-sm">
+                                                                                {statusDoc.status === 'REJECTED' ? 'Rejected' : 'Uploaded'}
+                                                                            </span>
                                                                         </div>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                                    </div>
+                                                                    {(statusDoc.status === 'DRAFT' || statusDoc.status === 'REJECTED') && (
+                                                                        <div className="absolute top-2 right-2">
+                                                                            <IKUpload
+                                                                                fileName={`${docType.id.toLowerCase()}_${Date.now()}`}
+                                                                                onSuccess={(res) => onUploadSuccess(res, docType.id)}
+                                                                                onError={onUploadError}
+                                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                                                onChange={() => setUploading(docType.id)}
+                                                                            />
+                                                                            <button className="p-1.5 bg-surface/80 hover:bg-surface rounded-lg backdrop-blur-md transition-colors border border-border">
+                                                                                <Upload className="h-4 w-4 text-main" />
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="relative border-2 border-dashed border-border rounded-xl p-8 transition-colors hover:border-primary/50 bg-surface/30">
+                                                                    {isUploading ? (
+                                                                        <div className="flex flex-col items-center gap-2">
+                                                                            <Clock className="h-8 w-8 text-primary animate-spin" />
+                                                                            <span className="text-sm text-primary">Uploading...</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            <IKUpload
+                                                                                fileName={`${docType.id.toLowerCase()}_${Date.now()}`}
+                                                                                useUniqueFileName={true}
+                                                                                onSuccess={(res) => onUploadSuccess(res, docType.id)}
+                                                                                onError={onUploadError}
+                                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                                                onChange={() => setUploading(docType.id)}
+                                                                            />
+                                                                            <div className="flex flex-col items-center gap-2 font-semibold">
+                                                                                <Upload className="h-8 w-8 text-muted" />
+                                                                                <span className="text-sm text-muted">Upload {docType.label}</span>
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
+                                                    {statusDoc?.status === 'REJECTED' && statusDoc.rejectionReason && (
+                                                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-2 items-start">
+                                                            <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                                                            <p className="text-xs text-red-500 font-medium">
+                                                                Rejected: {statusDoc.rejectionReason}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {statusDoc?.status === 'REJECTED' && statusDoc.rejectionReason && (
-                                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-2 items-start">
-                                                        <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                                        <p className="text-xs text-red-500 font-medium">
-                                                            Rejected: {statusDoc.rejectionReason}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
+                                </IKContext>
+                            ) : (
+                                <div className="glass-card p-8 rounded-2xl border border-border">
+                                    <h3 className="text-xl font-bold text-main mb-6">Business Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <label className="block text-sm font-medium text-muted">Business Name</label>
+                                            <input
+                                                type="text"
+                                                value={businessData.businessName}
+                                                onChange={(e) => setBusinessData({ ...businessData, businessName: e.target.value })}
+                                                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                                                placeholder="Enter your business name"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="block text-sm font-medium text-muted">Settlement Type</label>
+                                            <select
+                                                value={businessData.settlementType}
+                                                onChange={(e) => setBusinessData({ ...businessData, settlementType: e.target.value })}
+                                                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main"
+                                            >
+                                                <option value="PAYBILL">Paybill</option>
+                                                <option value="TILL">Till Number</option>
+                                                <option value="BANK_PAYBILL">Bank Paybill</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1 md:col-span-2">
+                                            <label className="block text-sm font-medium text-muted">Business Shortcode or Till Number</label>
+                                            <input
+                                                type="text"
+                                                value={businessData.shortcode}
+                                                onChange={(e) => setBusinessData({ ...businessData, shortcode: e.target.value })}
+                                                className="w-full px-4 py-3 bg-surface border border-border rounded-xl focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all text-main placeholder-muted/50"
+                                                placeholder="e.g. 123456"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                                        <p className="text-sm text-muted">
+                                            This information will be associated with your merchant capability and affects how funds are settled to this account.
+                                        </p>
+                                    </div>
                                 </div>
-                            </IKContext>
+                            )}
+
                             <div className="flex justify-between items-center pt-4">
                                 <button
                                     onClick={() => setCurrentStep(currentStep - 1)}
-                                    className="px-6 py-2 text-muted hover:text-main transition-colors flex items-center gap-2"
+                                    className="px-6 py-2 text-muted hover:text-main transition-colors flex items-center gap-2 font-medium"
                                 >
                                     <ChevronLeft className="h-4 w-4" /> Back
                                 </button>
                                 <button
-                                    disabled={!canGoToNext()}
-                                    onClick={() => setCurrentStep(currentStep + 1)}
+                                    disabled={!canGoToNext() || isSubmitting}
+                                    onClick={async () => {
+                                        if (currentStep === 2) {
+                                            try {
+                                                setIsSubmitting(true);
+                                                await api.patch('/merchants/profile', businessData);
+                                                setCurrentStep(3);
+                                            } catch (err: any) {
+                                                error(err.response?.data?.message || 'Failed to save business info');
+                                            } finally {
+                                                setIsSubmitting(false);
+                                            }
+                                        } else {
+                                            setCurrentStep(currentStep + 1);
+                                        }
+                                    }}
                                     className={clsx(
-                                        "px-8 py-2 rounded-xl font-semibold transition-all flex items-center gap-2",
-                                        canGoToNext() ? "bg-primary text-main shadow-lg shadow-primary/20" : "bg-surface/50 text-muted cursor-not-allowed"
+                                        "px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2",
+                                        canGoToNext() ? "bg-primary text-white shadow-lg shadow-primary/25 hover:scale-105 active:scale-95" : "bg-surface text-muted cursor-not-allowed border border-border"
                                     )}
                                 >
-                                    Continue <ChevronRight className="h-4 w-4" />
+                                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"} <ChevronRight className="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
