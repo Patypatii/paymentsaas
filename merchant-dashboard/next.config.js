@@ -6,6 +6,20 @@ const nextConfig = {
     NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY: 'public_4BIiXvUAWVr/Xofv+jcstrvng2o=',
     NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: 'https://ik.imagekit.io/srv4rp6ya',
   },
+  async redirects() {
+    return [
+      {
+        source: '/terms',
+        destination: 'http://localhost:3000/terms',
+        permanent: false,
+      },
+      {
+        source: '/privacy',
+        destination: 'http://localhost:3000/privacy',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

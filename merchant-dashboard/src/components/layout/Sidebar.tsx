@@ -45,10 +45,10 @@ const Sidebar = () => {
     // Mobile Top Bar (Logo + Theme Toggle)
     const MobileHeader = () => (
         <div className="lg:hidden fixed top-0 w-full z-50 flex items-center justify-between px-4 h-16 bg-background border-b border-border glass-panel">
-            <div className="flex items-center gap-2">
+            <Link href={process.env.NEXT_PUBLIC_WEBSITE_URL || "/"} className="flex items-center gap-2 group">
                 <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg" />
-                <span className="text-lg font-bold text-main tracking-tight">Paylor</span>
-            </div>
+                <span className="text-lg font-bold text-main tracking-tight group-hover:text-primary">Paylor</span>
+            </Link>
             <div className="flex items-center gap-2">
                 <button
                     className="p-2 rounded-lg text-muted hover:text-main"
@@ -162,10 +162,10 @@ const Sidebar = () => {
             <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
                 <div className="flex-1 flex flex-col min-h-0 bg-background border-r border-border glass-panel transition-colors duration-300">
                     <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-                        <div className="flex items-center flex-shrink-0 px-4 mb-8">
+                        <Link href={process.env.NEXT_PUBLIC_WEBSITE_URL || "/"} className="flex items-center flex-shrink-0 px-4 mb-8 group">
                             <img src="/favicon.svg" alt="Paylor" className="w-8 h-8 rounded-lg mr-3" />
-                            <span className="text-xl font-bold text-main tracking-tight transition-colors duration-300">Paylor</span>
-                        </div>
+                            <span className="text-xl font-bold text-main tracking-tight transition-colors duration-300 group-hover:text-primary">Paylor</span>
+                        </Link>
 
                         <nav className="mt-2 flex-1 px-2 space-y-1">
                             {navigation.map((item) => {

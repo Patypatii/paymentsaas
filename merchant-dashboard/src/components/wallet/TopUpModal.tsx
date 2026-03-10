@@ -118,7 +118,7 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                         <div className="p-2 rounded-lg bg-primary/10">
                             <Wallet className="h-5 w-5 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold text-main tracking-tight">Deposit to Wallet</h3>
+                        <h3 className="text-xl font-bold text-main tracking-tight">Service Credits</h3>
                     </div>
                     {state !== 'waiting' && (
                         <button
@@ -151,7 +151,7 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-muted uppercase tracking-wider mb-2">Amount (KES)</label>
+                            <label className="block text-sm font-bold text-muted uppercase tracking-wider mb-2">Credit Amount (KES)</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted group-focus-within:text-primary font-bold">
                                     KES
@@ -166,7 +166,7 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                                     placeholder="0.00"
                                 />
                             </div>
-                            <p className="mt-2 text-[10px] text-muted italic">Minimum deposit: KES 10.00</p>
+                            <p className="mt-2 text-[10px] text-muted italic">Minimum purchase is (KES 10.00)</p>
                         </div>
 
                         <div className="pt-2">
@@ -174,11 +174,11 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                                 type="submit"
                                 className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/25 transition-all"
                             >
-                                Deposit Now
+                                Buy Credits Now
                                 <Wallet className="h-5 w-5" />
                             </button>
-                            <p className="text-center text-[10px] text-muted mt-4">
-                                Securely processed via Safaricom M-Pesa Daraja API
+                            <p className="text-center text-[10px] text-muted mt-4 leading-relaxed">
+                                Credits are used to cover transaction charges. <br />
                             </p>
                         </div>
                     </form>
@@ -189,8 +189,8 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                     <div className="flex flex-col items-center justify-center py-12 space-y-4">
                         <Loader2 className="h-16 w-16 text-primary animate-spin" />
                         <div className="text-center">
-                            <h4 className="text-lg font-bold text-main mb-2">Initiating Payment...</h4>
-                            <p className="text-sm text-muted">Please wait while we process your request</p>
+                            <h4 className="text-lg font-bold text-main mb-2">Processing Purchase...</h4>
+                            <p className="text-sm text-muted">Please wait while we secure your credits</p>
                         </div>
                     </div>
                 )}
@@ -203,14 +203,14 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                             <div className="absolute inset-0 bg-primary/20 blur-2xl animate-pulse"></div>
                         </div>
                         <div className="text-center space-y-2">
-                            <h4 className="text-lg font-bold text-main">Waiting for Payment...</h4>
+                            <h4 className="text-lg font-bold text-main">Confirming Purchase...</h4>
                             <p className="text-sm text-muted">Check your phone for the M-Pesa prompt</p>
-                            <p className="text-xs text-muted/70">Enter your PIN to complete the transaction</p>
+                            <p className="text-xs text-muted/70">Enter your PIN to finalize your credits</p>
                         </div>
                         <div className="w-full bg-background/50 rounded-lg p-4 space-y-2">
                             <div className="flex justify-between text-xs">
-                                <span className="text-muted">Amount:</span>
-                                <span className="text-main font-mono font-bold">KES {amount}</span>
+                                <span className="text-muted">Credits:</span>
+                                <span className="text-main font-mono font-bold">{amount} Credits</span>
                             </div>
                             <div className="flex justify-between text-xs">
                                 <span className="text-muted">Phone:</span>
@@ -236,13 +236,13 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                             <div className="absolute inset-0 bg-green-500/20 blur-2xl"></div>
                         </div>
                         <div className="text-center space-y-2">
-                            <h4 className="text-2xl font-bold text-green-500">Payment Successful!</h4>
-                            <p className="text-sm text-muted">Your wallet has been credited</p>
+                            <h4 className="text-2xl font-bold text-green-500">Purchase Complete!</h4>
+                            <p className="text-sm text-muted">Your service credits have been added</p>
                         </div>
                         <div className="w-full bg-green-500/10 border border-green-500/20 rounded-lg p-4 space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted">Amount Deposited:</span>
-                                <span className="text-main font-mono font-bold">KES {amount}</span>
+                                <span className="text-muted">Credits Added:</span>
+                                <span className="text-main font-mono font-bold">{amount} Credits</span>
                             </div>
                         </div>
                         <button
@@ -262,8 +262,8 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                             <div className="absolute inset-0 bg-red-500/20 blur-2xl"></div>
                         </div>
                         <div className="text-center space-y-2">
-                            <h4 className="text-2xl font-bold text-red-500">Payment Failed</h4>
-                            <p className="text-sm text-muted">The transaction was not completed</p>
+                            <h4 className="text-2xl font-bold text-red-500">Purchase Failed</h4>
+                            <p className="text-sm text-muted">The credits could not be purchased</p>
                             <p className="text-xs text-muted/70">Please try again or contact support if the issue persists</p>
                         </div>
                         <div className="flex gap-3 w-full">

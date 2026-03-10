@@ -70,7 +70,7 @@ export default function WalletPage() {
         <DashboardLayout title="Wallet - Paylor">
             <div className="space-y-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-main">Prepaid Wallet</h1>
+                    <h1 className="text-2xl font-bold text-main">Service Credits</h1>
                     <p className="text-muted mt-1">Manage your credits for transaction fees.</p>
                 </div>
 
@@ -82,7 +82,7 @@ export default function WalletPage() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
                                 <span className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider mb-2">
-                                    <Wallet className="h-4 w-4" /> Current Balance
+                                    <Wallet className="h-4 w-4" /> Available Credits
                                 </span>
                                 <h1 className="text-5xl font-bold text-main font-mono tracking-tight flex items-baseline gap-2">
                                     <span className="text-2xl text-muted font-medium">{walletData?.currency}</span>
@@ -99,7 +99,7 @@ export default function WalletPage() {
                                     className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-primary/25 transition-all text-lg"
                                 >
                                     <Plus className="h-6 w-6" />
-                                    Deposit Funds
+                                    Buy Credits
                                 </button>
                             </div>
                         </div>

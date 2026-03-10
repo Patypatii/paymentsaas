@@ -231,7 +231,7 @@ export default function Register() {
                   className="w-4 h-4 rounded border-gray-600 bg-background/50 text-primary focus:ring-primary/50"
                 />
                 <label htmlFor="terms" className="text-sm text-muted">
-                  I accept the <Link href="/terms" className="text-primary hover:text-primary-hover">Terms of Service</Link>
+                  I accept the <Link href={`${process.env.NEXT_PUBLIC_WEBSITE_URL || ''}/terms`} className="text-primary hover:text-primary-hover">Terms of Service</Link>
                 </label>
               </div>
             </div>
