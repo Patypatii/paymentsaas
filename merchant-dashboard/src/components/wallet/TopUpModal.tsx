@@ -78,9 +78,16 @@ export default function TopUpModal({ isOpen, onClose, defaultPhone = '', onSucce
                 return;
             }
 
+            let formattedPhone = phone.replace(/\D/g, '');
+            if (formattedPhone.startsWith('0')) {
+                formattedPhone = '254' + formattedPhone.substring(1);
+            } else if (formattedPhone.startsWith('7') || formattedPhone.startsWith('1')) {
+                formattedPhone = '254' + formattedPhone;
+            }
+
             const response = await api.post('/merchants/wallet/topup', {
                 amount: val,
-                phone
+                phone: formattedPhone
             });
 
             setReference(response.data.reference);
