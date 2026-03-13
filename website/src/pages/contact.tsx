@@ -1,5 +1,5 @@
 import Layout from '../components/layout/Layout';
-import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast';
@@ -83,6 +83,17 @@ export default function Contact() {
                     <h3 className="text-lg font-medium text-main mb-1">Visit Us</h3>
                     <p className="text-muted mb-2">Come say hello at our office HQ.</p>
                     <p className="text-main">Nairobi, Kenya</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-surface flex items-center justify-center border border-border">
+                    <MessageCircle className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-main mb-1">Community</h3>
+                    <p className="text-muted mb-2">Connect with us and other merchants.</p>
+                    <a href="https://chat.whatsapp.com/H5hUEND9cu47lYkJng3IVB" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-main transition-colors">Join WhatsApp Group</a>
                   </div>
                 </div>
               </div>
