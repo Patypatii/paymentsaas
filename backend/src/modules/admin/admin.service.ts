@@ -94,7 +94,6 @@ export class AdminService {
    */
   static async approveMerchant(merchantId: string): Promise<{
     merchant: any;
-    apiKey: string;
   }> {
     const result = await MerchantService.activateMerchant(merchantId);
 
@@ -103,7 +102,7 @@ export class AdminService {
       adminAction: true,
     });
 
-    return result;
+    return { merchant: result };
   }
 
   /**
