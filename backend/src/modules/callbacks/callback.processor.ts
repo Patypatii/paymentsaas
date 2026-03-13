@@ -86,22 +86,19 @@ export class CallbackProcessor {
 
         if (pendingTopup && status === 'COMPLETED' && transaction.amount >= pendingTopup.amount) {
           console.log(`Crediting Wallet for Merchant: ${transaction.merchantId}`);
-          // Use updateBalance instead of creditWallet to avoid duplicate transaction records
-          // since we are about to update the pendingTopup record ourselves.
           await WalletService.updateBalance(
             transaction.merchantId.toString(),
             transaction.amount
           );
 
-          // Mark pending transaction as completed (or delete it since creditWallet creates a new one? No, update it)
           pendingTopup.status = 'COMPLETED';
           pendingTopup.metadata = { mpesaReceipt };
           await pendingTopup.save();
           console.log('Wallet credited and top-up transaction marked COMPLETED');
         } else if (pendingTopup) {
-          pendingTopup.status = 'FAILED';
-          await pendingTopup.save();
-          console.log('Top-up transaction marked FAILED');
+          // Delete failed wallet top-up transactions to save storage
+          await WalletTransactionModel.findByIdAndDelete(pendingTopup._id);
+          console.log('Top-up transaction deleted due to failure (saving storage)');
         }
 
         // Return early for topups? Or update the transient Payment record too?
@@ -140,9 +137,13 @@ export class CallbackProcessor {
           });
       }
 
-      await transaction.save();
-
-      console.log(`Transaction ${transaction._id} saved with new status: ${transaction.status}`);
+      if (status === 'FAILED') {
+        await PaymentModel.findByIdAndDelete(transaction._id);
+        console.log(`Transaction ${transaction._id} deleted from database (FAILED) to save storage.`);
+      } else {
+        await transaction.save();
+        console.log(`Transaction ${transaction._id} saved with new status: ${transaction.status}`);
+      }
 
       logger.info('Transaction updated from callback', {
         transactionId: transaction.id,
@@ -150,7 +151,8 @@ export class CallbackProcessor {
         mpesaReceipt,
       });
 
-      const success = transaction.status === 'COMPLETED';
+      // Use local `status` variable, not transaction.status, since transaction may have been deleted above
+      const success = status === 'COMPLETED';
 
       // 5. Dispatch Webhook & Email
       console.log('Dispatching notifications...');
@@ -183,28 +185,70 @@ export class CallbackProcessor {
         ).catch(err => console.error('Custom callback FAILED:', err.message));
       }
 
-      // Email Notification to Merchant (Regular Payments)
+      // Email & SMS/WhatsApp Notification to Merchant (Regular Payments)
       if (success && !transaction.reference.startsWith('TOPUP-')) {
         const { MerchantModel } = await import('../merchants/merchant.model');
         const { EmailService } = await import('../../common/services/email.service');
+        const { WhatsappService } = await import('../../common/services/whatsapp.service');
 
         MerchantModel.findById(transaction.merchantId)
           .then(merchant => {
-            if (merchant && merchant.notifications?.email) {
-              EmailService.sendPaymentSuccessEmail(
-                merchant.email,
-                `${merchant.firstName} ${merchant.lastName}`,
-                {
-                  amount: transaction.amount,
-                  currency: transaction.currency,
-                  reference: transaction.reference,
-                  phone: transaction.customerPhone || 'N/A',
-                  mpesaReceipt: mpesaReceipt || undefined
+            if (merchant) {
+              // Send Email if enabled
+              if (merchant.notifications?.email) {
+                EmailService.sendPaymentSuccessEmail(
+                  merchant.email,
+                  `${merchant.firstName} ${merchant.lastName}`,
+                  {
+                    amount: transaction.amount,
+                    currency: transaction.currency,
+                    reference: transaction.reference,
+                    phone: transaction.customerPhone || 'N/A',
+                    mpesaReceipt: mpesaReceipt || undefined
+                  }
+                ).catch(err => console.error('Payment email FAILED:', err.message));
+              }
+
+              // Send WhatsApp Notifications
+              // Use alertPhone first (dedicated notification phone), fallback to merchant's main phone
+              if (transaction.customerPhone) {
+                const isSmsEnabled = merchant.notifications?.sms;
+                const alertPhone = merchant.notifications?.alertPhone;
+                const merchantMainPhone = merchant.phoneNumber;
+
+                console.log(`WhatsApp Notification Status: ${isSmsEnabled ? 'ENABLED' : 'DISABLED'}`);
+                console.log(`Merchant Alert Phone: ${alertPhone || 'Not set'}`);
+
+                const merchantWhatsappPhone = (isSmsEnabled && alertPhone)
+                  ? alertPhone
+                  : (isSmsEnabled && merchantMainPhone)
+                    ? merchantMainPhone
+                    : undefined;
+
+                if (isSmsEnabled) {
+                  console.log(`Attempting to send WhatsApp: Customer(${transaction.customerPhone}), Merchant(${merchantWhatsappPhone || 'None'})`);
+                  WhatsappService.sendPaymentSuccessNotification(
+                    transaction.customerPhone,
+                    merchantWhatsappPhone,
+                    merchant.businessName || `${merchant.firstName} ${merchant.lastName}`,
+                    transaction.amount,
+                    transaction.currency,
+                    transaction.reference,
+                    mpesaReceipt || null
+                  ).then(() => console.log('WhatsApp notification block completed'))
+                  .catch(err => {
+                    logger.error('WhatsApp notification FAILED', { error: err.message });
+                    console.error('WhatsApp notification FAILED:', err.message);
+                  });
+                } else {
+                  console.log('WhatsApp notifications are DISABLED for this merchant.');
                 }
-              ).catch(err => console.error('Payment email FAILED:', err.message));
+              } else {
+                console.warn('Cannot send WhatsApp: Customer phone missing in transaction.');
+              }
             }
           })
-          .catch(err => console.error('Failed to find merchant for email:', err.message));
+          .catch(err => console.error('Failed to find merchant for notifications:', err.message));
       }
 
       await WebhookDispatcher.dispatchTransactionUpdate(transaction.merchantId.toString(), {

@@ -1,5 +1,8 @@
 import { WalletModel, WalletTransactionModel, IWallet } from './wallet.model';
+import { MerchantModel } from '../merchants/merchant.model';
 import { PricingService } from './pricing.service';
+import { WhatsappService } from '../../common/services/whatsapp.service';
+import { logger } from '../../common/utils/logger';
 
 export class WalletService {
     /**
@@ -75,6 +78,32 @@ export class WalletService {
             description: `Transaction Fee for ${reference}`,
             status: 'COMPLETED'
         });
+
+        // Check for Low Balance Alert
+        try {
+            const currentWallet = await WalletModel.findById(wallet.id);
+            if (!currentWallet) return;
+
+            const merchant = await MerchantModel.findById(merchantId);
+            if (merchant && merchant.notifications?.lowBalanceAlert) {
+                const threshold = merchant.notifications.lowBalanceThreshold || 50;
+                
+                // Only alert if we just crossed the threshold to avoid spamming
+                // We know previous balance was wallet.balance, and new is currentWallet.balance
+                if (wallet.balance >= threshold && currentWallet.balance < threshold) {
+                    const alertPhone = merchant.notifications.alertPhone || merchant.phoneNumber;
+                    
+                    if (alertPhone) {
+                        const message = `⚠️ *Paylor Low Balance Alert*\n\nYour credit balance has dropped below your threshold of ${wallet.currency} ${threshold.toFixed(2)}.\n\nCurrent Balance: *${wallet.currency} ${currentWallet.balance.toFixed(2)}*\n\nPlease top up to ensure uninterrupted service.`;
+                        
+                        await WhatsappService.sendMessage(alertPhone, message);
+                        logger.info(`Low balance alert sent to merchant ${merchantId} at ${alertPhone}`);
+                    }
+                }
+            }
+        } catch (error: any) {
+            logger.error('Failed to process low balance alert', { error: error.message, merchantId });
+        }
     }
 
     /**

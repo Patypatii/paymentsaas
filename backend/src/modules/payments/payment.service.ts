@@ -179,10 +179,9 @@ export class PaymentService {
 
       return response;
     } catch (error: any) {
-      // Update intent to FAILED
-      transaction.status = 'FAILED';
-      transaction.metadata = { ...transaction.metadata, error: error.message };
-      await transaction.save();
+      // Delete intent instead of keeping as FAILED
+      await PaymentModel.findByIdAndDelete(transaction._id);
+      console.log(`Transaction ${transaction._id} deleted on inline failure (saving storage)`);
       throw error;
     }
   }

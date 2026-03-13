@@ -50,6 +50,11 @@ interface EnvConfig {
     privateKey: string;
     urlEndpoint: string;
   };
+  apiskan: {
+    instanceKey: string;
+    instanceId: string;
+    baseUrl: string;
+  };
 }
 
 function getEnvVar(key: string, defaultValue?: string): string {
@@ -115,5 +120,12 @@ export const config: EnvConfig = {
     publicKey: getEnvVar('IMAGEKIT_PUBLIC_KEY'),
     privateKey: getEnvVar('IMAGEKIT_PRIVATE_KEY'),
     urlEndpoint: getEnvVar('IMAGEKIT_URL_ENDPOINT'),
+  },
+  apiskan: {
+    // API key used in the x-api-key header (ik_live_... prefix)
+    instanceKey: getEnvVar('APISKAN_INSTANCE_KEY'),
+    // The UUID of the WhatsApp instance (get from /instances endpoint or Apiskan dashboard)
+    instanceId: getEnvVar('APISKAN_INSTANCE_ID'),
+    baseUrl: getEnvVar('APISKAN_BASE_URL', 'https://api.apiskan.website'),
   },
 };

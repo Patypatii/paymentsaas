@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import Head from 'next/head';
 import Link from 'next/link';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import CommunityPopup from '../components/CommunityPopup';
 
 export default function Register() {
   const router = useRouter();
@@ -253,6 +254,7 @@ export default function Register() {
           </p>
         </div>
       </div>
+      <CommunityPopup />
     </>
   );
 }

@@ -67,7 +67,7 @@ export class WalletController {
         const { WalletTransactionModel } = await import('./wallet.model');
         const wallet = await WalletService.getWallet(merchantId);
 
-        await WalletTransactionModel.create({
+        const pendingTx = await WalletTransactionModel.create({
             walletId: wallet.id,
             merchantId,
             amount: amount,
@@ -83,15 +83,21 @@ export class WalletController {
         const targetType = platformChannel?.type === 'TILL' ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
 
         // 2. Initiate STK
-        const stkResponse = await STKPushService.initiate({
-            phone,
-            amount,
-            reference,
-            description: 'Paylor Credit Top Up'
-        },
-            targetShortcode,
-            targetType
-        );
+        let stkResponse;
+        try {
+            stkResponse = await STKPushService.initiate({
+                phone,
+                amount,
+                reference,
+                description: 'Paylor Credit Top Up'
+            },
+                targetShortcode,
+                targetType
+            );
+        } catch (error) {
+            await WalletTransactionModel.findByIdAndDelete(pendingTx._id);
+            throw error;
+        }
 
         // 3. Create a Payment record for the callback to track
         // This is necessary because CallbackProcessor looks up by PaymentModel

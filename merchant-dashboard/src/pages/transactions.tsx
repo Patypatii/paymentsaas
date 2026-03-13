@@ -36,8 +36,8 @@ export default function Transactions() {
             if (!silent) setLoading(true);
             const offset = (page - 1) * limit;
             const response = await api.get(`/merchants/payments/transactions?limit=${limit}&offset=${offset}`);
-            setTransactions(response.data.transactions);
-            setTotal(response.data.total);
+            setTransactions(response.data?.transactions ?? []);
+            setTotal(response.data?.total ?? 0);
         } catch (error) {
             console.error('Failed to fetch transactions:', error);
         } finally {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Mail, Loader2, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import CommunityPopup from '../components/CommunityPopup';
 
 export default function ForgotPassword() {
     const router = useRouter();
@@ -28,7 +29,8 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+        <>
+            <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[128px] opacity-40"></div>
@@ -105,5 +107,7 @@ export default function ForgotPassword() {
                 </div>
             </div>
         </div>
+            <CommunityPopup />
+        </>
     );
 }

@@ -22,6 +22,9 @@ export interface IMerchant extends Document {
   notifications?: {
     email: boolean;
     sms: boolean;
+    lowBalanceAlert: boolean;
+    alertPhone?: string;
+    lowBalanceThreshold: number;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -52,7 +55,10 @@ const MerchantSchema: Schema = new Schema({
   resetPasswordExpires: { type: Date },
   notifications: {
     email: { type: Boolean, default: true },
-    sms: { type: Boolean, default: true }
+    sms: { type: Boolean, default: true },
+    lowBalanceAlert: { type: Boolean, default: false },
+    alertPhone: { type: String },
+    lowBalanceThreshold: { type: Number, default: 50 } // Default threshold KES 50
   }
 }, {
   timestamps: true,

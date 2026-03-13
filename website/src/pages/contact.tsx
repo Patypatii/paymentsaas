@@ -71,7 +71,7 @@ export default function Contact() {
                   <div>
                     <h3 className="text-lg font-medium text-main mb-1">Call Us</h3>
                     <p className="text-muted mb-2">Mon-Fri from 8am to 5pm.</p>
-                    <a href="tel:+254765344101" className="text-primary hover:text-main transition-colors">+254 765 344 101</a>
+                    <a href="tel:+254795692841" className="text-primary hover:text-main transition-colors">+254 795 692 841</a>
                   </div>
                 </div>
 

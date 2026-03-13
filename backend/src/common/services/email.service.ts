@@ -176,7 +176,7 @@ export class EmailService {
             </div>
             <p>This transaction has been recorded in your dashboard and the funds (minus fees) have been settled accordingly.</p>
             <div style="text-align: center;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/transactions" class="button">View Transaction</a>
+                <a href="${process.env.FRONTEND_URL || 'https://apiskan.website'}/transactions" class="button">View Transaction</a>
             </div>
         `);
 

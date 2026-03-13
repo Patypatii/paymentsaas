@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import { User, Lock, Bell, Store, Check, Loader2 } from 'lucide-react';
+import { User, Lock, Bell, Store, Check, Loader2, X, Phone, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -24,8 +24,19 @@ export default function Settings() {
     });
     const [notifications, setNotifications] = useState({
         email: true,
-        sms: true
+        sms: true,
+        lowBalanceAlert: false,
+        alertPhone: '',
+        lowBalanceThreshold: 50
     });
+
+    // Dialog states
+    const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
+    const [lowBalanceDialogOpen, setLowBalanceDialogOpen] = useState(false);
+    const [dialogPhone, setDialogPhone] = useState('');
+    const [dialogThreshold, setDialogThreshold] = useState('50');
+    const phoneInputRef = useRef<HTMLInputElement>(null);
+    const thresholdInputRef = useRef<HTMLInputElement>(null);
 
     const tabs = [
         { id: 'general', name: 'General', icon: Store },
@@ -77,6 +88,58 @@ export default function Settings() {
         const newSettings = { ...notifications, [type]: !notifications[type] };
         setNotifications(newSettings);
         handleUpdateProfile({ notifications: newSettings });
+    };
+
+    /** WhatsApp: open dialog when enabling, disable directly */
+    const handleWhatsappToggle = () => {
+        if (!notifications.sms) {
+            // Enabling: open dialog to ask for phone
+            setDialogPhone(notifications.alertPhone || '');
+            setWhatsappDialogOpen(true);
+            setTimeout(() => phoneInputRef.current?.focus(), 100);
+        } else {
+            // Disabling directly
+            const updated = { ...notifications, sms: false };
+            setNotifications(updated);
+            handleUpdateProfile({ notifications: updated });
+        }
+    };
+
+    const confirmWhatsappDialog = () => {
+        if (!dialogPhone.trim()) return;
+
+        // Normalise to Kenyan international format (254XXXXXXXXX)
+        let phone = dialogPhone.trim().replace(/[\+\-\s]/g, '');
+        if (phone.startsWith('0')) phone = '254' + phone.slice(1);        // 07xx → 2547xx
+        else if (phone.startsWith('7') || phone.startsWith('1')) phone = '254' + phone; // 7xx → 2547xx
+        // already 254xxx → keep as is
+
+        const updated = { ...notifications, sms: true, alertPhone: phone };
+        setNotifications(updated);
+        handleUpdateProfile({ notifications: updated });
+        setWhatsappDialogOpen(false);
+    };
+
+    /** Low Balance Alert: open dialog when enabling, disable directly */
+    const handleLowBalanceToggle = () => {
+        if (!notifications.lowBalanceAlert) {
+            setDialogThreshold(String(notifications.lowBalanceThreshold || 50));
+            setLowBalanceDialogOpen(true);
+            setTimeout(() => thresholdInputRef.current?.focus(), 100);
+        } else {
+            const updated = { ...notifications, lowBalanceAlert: false };
+            setNotifications(updated);
+            handleUpdateProfile({ notifications: updated });
+        }
+    };
+
+    const confirmLowBalanceDialog = () => {
+        const threshold = parseFloat(dialogThreshold);
+        if (isNaN(threshold) || threshold <= 0) return;
+        const updated = { ...notifications, lowBalanceAlert: true, lowBalanceThreshold: threshold };
+        setNotifications(updated);
+        handleUpdateProfile({ notifications: updated });
+        setLowBalanceDialogOpen(false);
     };
 
     const handleAvatarUpload = async (file: File) => {
@@ -216,6 +279,7 @@ export default function Settings() {
                                 <p className="text-sm text-muted mb-6">Choose how you want to be notified about important updates and transaction alerts.</p>
 
                                 <div className="space-y-4">
+                                    {/* Email Alerts */}
                                     <div className="flex items-center justify-between p-4 bg-surface/50 rounded-lg border border-border">
                                         <div>
                                             <p className="text-sm font-medium text-main">Email Alerts</p>
@@ -225,27 +289,130 @@ export default function Settings() {
                                             onClick={() => handleNotificationToggle('email')}
                                             className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${notifications.email ? 'bg-primary' : 'bg-gray-200 dark:bg-white/10'}`}
                                         >
-                                            <span
-                                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifications.email ? 'translate-x-5' : 'translate-x-0'}`}
-                                            />
+                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifications.email ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center justify-between p-4 bg-surface/50 rounded-lg border border-border opacity-50">
+                                    {/* WhatsApp Alerts */}
+                                    <div className="flex items-center justify-between p-4 bg-surface/50 rounded-lg border border-border">
                                         <div>
-                                            <p className="text-sm font-medium text-main">SMS Alerts</p>
-                                            <p className="text-xs text-muted">Receive instant SMS notifications for payouts (Coming Soon)</p>
+                                            <p className="text-sm font-medium text-main flex items-center gap-2">WhatsApp Notifications <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-medium">NEW</span></p>
+                                            <p className="text-xs text-muted">Get instant WhatsApp alerts for every successful payment.</p>
+                                            {notifications.sms && notifications.alertPhone && (
+                                                <p className="text-xs text-primary mt-1 flex items-center gap-1"><Phone className="h-3 w-3" /> Sending to: {notifications.alertPhone}</p>
+                                            )}
                                         </div>
                                         <button
-                                            disabled
-                                            className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-not-allowed rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-gray-200 dark:bg-white/10"
+                                            onClick={handleWhatsappToggle}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${notifications.sms ? 'bg-green-500' : 'bg-gray-200 dark:bg-white/10'}`}
                                         >
-                                            <span
-                                                className="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"
-                                            />
+                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifications.sms ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        </button>
+                                    </div>
+
+                                    {/* Low Balance Alert */}
+                                    <div className="flex items-center justify-between p-4 bg-surface/50 rounded-lg border border-border">
+                                        <div>
+                                            <p className="text-sm font-medium text-main flex items-center gap-2">Low Balance Alert <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-medium">NEW</span></p>
+                                            <p className="text-xs text-muted">Get a WhatsApp alert when your wallet drops below a set threshold.</p>
+                                            {notifications.lowBalanceAlert && (
+                                                <p className="text-xs text-amber-400 mt-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Alert when below: KES {notifications.lowBalanceThreshold}</p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={handleLowBalanceToggle}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${notifications.lowBalanceAlert ? 'bg-amber-500' : 'bg-gray-200 dark:bg-white/10'}`}
+                                        >
+                                            <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifications.lowBalanceAlert ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* ── WhatsApp Dialog ── */}
+                                {whatsappDialogOpen && (
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setWhatsappDialogOpen(false)}>
+                                        <div className="relative w-full max-w-md mx-4 glass-card border border-border rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => setWhatsappDialogOpen(false)} className="absolute top-4 right-4 text-muted hover:text-main transition-colors"><X className="h-5 w-5" /></button>
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                    <Phone className="h-5 w-5 text-green-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-base font-semibold text-main">Enable WhatsApp Alerts</h3>
+                                                    <p className="text-xs text-muted">Enter your WhatsApp number to receive payment notifications.</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="block text-sm font-medium text-muted">WhatsApp Phone Number</label>
+                                                <input
+                                                    ref={phoneInputRef}
+                                                    type="tel"
+                                                    value={dialogPhone}
+                                                    onChange={e => setDialogPhone(e.target.value)}
+                                                    placeholder="e.g. 254712345678"
+                                                    className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-main focus:ring-1 focus:ring-green-500 outline-none"
+                                                    onKeyDown={e => e.key === 'Enter' && confirmWhatsappDialog()}
+                                                />
+                                                <p className="text-xs text-muted">Include country code, no + or spaces. e.g. 254712345678</p>
+                                            </div>
+                                            <div className="flex gap-3 mt-5">
+                                                <button onClick={() => setWhatsappDialogOpen(false)} className="flex-1 px-4 py-2 rounded-lg border border-border text-muted hover:text-main transition-colors text-sm font-medium">Cancel</button>
+                                                <button
+                                                    onClick={confirmWhatsappDialog}
+                                                    disabled={!dialogPhone.trim()}
+                                                    className="flex-1 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                                                >
+                                                    <Check className="h-4 w-4" /> Enable Alerts
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── Low Balance Dialog ── */}
+                                {lowBalanceDialogOpen && (
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setLowBalanceDialogOpen(false)}>
+                                        <div className="relative w-full max-w-md mx-4 glass-card border border-border rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => setLowBalanceDialogOpen(false)} className="absolute top-4 right-4 text-muted hover:text-main transition-colors"><X className="h-5 w-5" /></button>
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                                    <AlertTriangle className="h-5 w-5 text-amber-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-base font-semibold text-main">Set Low Balance Threshold</h3>
+                                                    <p className="text-xs text-muted">You&apos;ll get a WhatsApp alert when your balance drops below this amount.</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="block text-sm font-medium text-muted">Minimum Balance (KES)</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-medium">KES</span>
+                                                    <input
+                                                        ref={thresholdInputRef}
+                                                        type="number"
+                                                        min="1"
+                                                        value={dialogThreshold}
+                                                        onChange={e => setDialogThreshold(e.target.value)}
+                                                        placeholder="e.g. 100"
+                                                        className="w-full pl-12 pr-4 py-2.5 bg-background border border-border rounded-lg text-main focus:ring-1 focus:ring-amber-500 outline-none"
+                                                        onKeyDown={e => e.key === 'Enter' && confirmLowBalanceDialog()}
+                                                    />
+                                                </div>
+                                                <p className="text-xs text-muted">Alert will be sent to your configured WhatsApp number.</p>
+                                            </div>
+                                            <div className="flex gap-3 mt-5">
+                                                <button onClick={() => setLowBalanceDialogOpen(false)} className="flex-1 px-4 py-2 rounded-lg border border-border text-muted hover:text-main transition-colors text-sm font-medium">Cancel</button>
+                                                <button
+                                                    onClick={confirmLowBalanceDialog}
+                                                    disabled={!dialogThreshold || parseFloat(dialogThreshold) <= 0}
+                                                    className="flex-1 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition-colors text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                                                >
+                                                    <Check className="h-4 w-4" /> Enable Alert
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
