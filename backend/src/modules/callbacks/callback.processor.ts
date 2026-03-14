@@ -230,7 +230,6 @@ export class CallbackProcessor {
                   WhatsappService.sendPaymentSuccessNotification(
                     transaction.customerPhone,
                     merchantWhatsappPhone,
-                    merchant.businessName || `${merchant.firstName} ${merchant.lastName}`,
                     transaction.amount,
                     transaction.currency,
                     transaction.reference,

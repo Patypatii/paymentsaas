@@ -60,7 +60,6 @@ export class WhatsappService {
   static async sendPaymentSuccessNotification(
     customerPhone: string,
     merchantPhone: string | undefined,
-    merchantName: string,
     amount: number,
     currency: string,
     reference: string,
@@ -68,17 +67,10 @@ export class WhatsappService {
   ) {
     const receiptSnippet = mpesaReceipt ? `Receipt: ${mpesaReceipt}\n` : '';
     
-    // Customer Message
-    const customerMsg = `Payment successful!\n\nYou paid ${currency} ${amount} to *${merchantName}*.\nRef: ${reference}\n${receiptSnippet}\nThank you for choosing us!`;
-    const customerPromise = this.sendMessage(customerPhone, customerMsg);
-
     // Merchant Message
-    let merchantPromise = Promise.resolve(true);
     if (merchantPhone) {
       const merchantMsg = `New Payment Received 💰\n\nAmount: ${currency} ${amount}\nFrom: ${customerPhone}\nRef: ${reference}\n${receiptSnippet}\nYour wallet balance has been updated.`;
-      merchantPromise = this.sendMessage(merchantPhone, merchantMsg);
+      await this.sendMessage(merchantPhone, merchantMsg);
     }
-
-    await Promise.allSettled([customerPromise, merchantPromise]);
   }
 }
