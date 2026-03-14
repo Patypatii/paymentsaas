@@ -186,4 +186,33 @@ export class EmailService {
             htmlContent: html
         });
     }
+
+    /**
+     * Send Service Deposit Notification to Admin
+     */
+    static async sendServiceDepositNotification(
+        adminEmail: string,
+        amount: number,
+        receipt: string,
+        merchantId: string,
+        merchantName: string
+    ): Promise<boolean> {
+        const html = this.wrapInTemplate('New Service Deposit Received 🚀', `
+            <p>Hello Admin,</p>
+            <p>A new service deposit (Top-Up) has been successfully processed.</p>
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #bbf7d0;">
+                <p style="margin: 5px 0;"><strong>Merchant:</strong> ${merchantName} (${merchantId})</p>
+                <p style="margin: 5px 0;"><strong>Amount:</strong> <span style="font-size: 18px; color: #166534;">KES ${amount.toLocaleString()}</span></p>
+                <p style="margin: 5px 0;"><strong>Receipt:</strong> ${receipt}</p>
+                <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+            </div>
+            <p>The merchant's wallet has been credited automatically.</p>
+        `);
+
+        return this.send({
+            to: [{ name: 'System Admin', email: adminEmail }],
+            subject: `Service Deposit Alert: KES ${amount} from ${merchantName}`,
+            htmlContent: html
+        });
+    }
 }

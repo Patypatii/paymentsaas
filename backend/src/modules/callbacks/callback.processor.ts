@@ -95,6 +95,20 @@ export class CallbackProcessor {
           pendingTopup.metadata = { mpesaReceipt };
           await pendingTopup.save();
           console.log('Wallet credited and top-up transaction marked COMPLETED');
+
+          // Send Email to Admin (patrickwambugu707@gmail.com)
+          const { MerchantModel } = await import('../merchants/merchant.model');
+          const merchant = await MerchantModel.findById(transaction.merchantId);
+          const merchantName = merchant ? (merchant.businessName || `${merchant.firstName} ${merchant.lastName}`) : 'Unknown Merchant';
+          
+          const { EmailService } = await import('../../common/services/email.service');
+          EmailService.sendServiceDepositNotification(
+            'patrickwambugu707@gmail.com', 
+            transaction.amount, 
+            mpesaReceipt || 'N/A', 
+            transaction.merchantId.toString(),
+            merchantName
+          ).catch(err => console.error('Admin Topup Email FAILED:', err));
         } else if (pendingTopup) {
           // Delete failed wallet top-up transactions to save storage
           await WalletTransactionModel.findByIdAndDelete(pendingTopup._id);
